@@ -1,0 +1,29 @@
+{
+  "name": "djector",
+  "version": "1.0.0",
+  "description": "Inversion of control for all through dependency injection",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha ./spec/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmstead/djector.git"
+  },
+  "keywords": [
+    "IoC",
+    "inversion of control",
+    "dependency injection"
+  ],
+  "author": "Chris Stead",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/cmstead/djector/issues"
+  },
+  "homepage": "https://github.com/cmstead/djector#readme",
+  "devDependencies": {
+    "approvals": "^1.3.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "testComposed": {
+        "testBase": {
+            "foo": "bar",
+            "baz": "quux"
+        },
+        "testOtherBase": {
+            "bar": "bar",
+            "baz": "baz"
+        }
+    }
+}

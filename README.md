@@ -1,2 +1,3 @@
-# djector
-Inversion of control for all through dependency injection
+# DJector
+
+## Inversion of control for all through dependency injection
