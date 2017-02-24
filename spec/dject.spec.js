@@ -3,14 +3,14 @@ var assert = require('chai').assert;
 var approvalsConfig = require('./approvalsConfig/approvalsConfig');
 var approvals = require('approvals').configure(approvalsConfig).mocha('./spec/approvals');
 
-var djector = require('../index');
+var dject = require('../index');
 
 
 function prettyJson(obj) {
     return JSON.stringify(obj, null, 4);
 }
 
-describe('DJector', function () {
+describe('DJect', function () {
 
     var config;
 
@@ -25,12 +25,12 @@ describe('DJector', function () {
     });
 
     it('should be instantiable', function () {
-        var container = djector.new(config);
+        var container = dject.new(config);
         assert.equal(typeof container, 'object');
     });
 
     it('should throw if no config is provided', function () {
-        assert.throws(djector.new, 'DJector requires a configuration object.');
+        assert.throws(dject.new, 'DJect requires a configuration object.');
     });
 
     describe('Register and manage modules', function () {
@@ -38,7 +38,7 @@ describe('DJector', function () {
         var container;
 
         beforeEach(function () {
-            container = djector.new(config);
+            container = dject.new(config);
         });
 
         it('should throw an error if module does not exist', function () {

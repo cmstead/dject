@@ -1,5 +1,5 @@
 {
-  "name": "djector",
+  "name": "dject",
   "version": "1.0.0",
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cmstead/djector.git"
+    "url": "git+https://github.com/cmstead/dject.git"
   },
   "keywords": [
     "IoC",
@@ -18,9 +18,9 @@
   "author": "Chris Stead",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/cmstead/djector/issues"
+    "url": "https://github.com/cmstead/dject/issues"
   },
-  "homepage": "https://github.com/cmstead/djector#readme",
+  "homepage": "https://github.com/cmstead/dject#readme",
   "devDependencies": {
     "approvals": "^1.3.0",
     "chai": "^3.5.0",

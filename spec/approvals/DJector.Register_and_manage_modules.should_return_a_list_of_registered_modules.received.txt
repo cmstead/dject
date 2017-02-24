@@ -1,6 +1,0 @@
-[
-    "justInTime",
-    "testComposed",
-    "testBase",
-    "otherBase"
-]

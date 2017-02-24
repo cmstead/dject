@@ -6,7 +6,7 @@ var InjectorError = require('./modules/injectorError');
 var setDefaults = require('./modules/setDefaults');
 var wrapOnInstantiable = require('./modules/wrapOnInstantiable');
 
-function djectorFactory(config) {
+function djectFactory(config) {
     var registeredModules = {};
     var registeredSingletons = {};
 
@@ -105,10 +105,10 @@ function djectorFactory(config) {
 
 function buildNew(config) {
     if (typeof config !== 'object') {
-        throw new Error('DJector requires a configuration object.');
+        throw new Error('DJect requires a configuration object.');
     }
 
-    return djectorFactory(config);
+    return djectFactory(config);
 }
 
 module.exports = {
