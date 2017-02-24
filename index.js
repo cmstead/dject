@@ -11,6 +11,7 @@ function djectFactory(config) {
     var registeredSingletons = {};
 
     config.cwd = typeof config.cwd === 'string' ? config.cwd : '.';
+    config.modulePaths = Object.prototype.toString.call(config.modulePaths) === '[object Array]' ? config.modulePaths : ['modules'];
 
     function register(module) {
         var cleanModule = setDefaults(module);
