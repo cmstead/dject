@@ -5,13 +5,13 @@ var fs = require('fs');
 var InjectorError = require('./modules/injectorError');
 var setDefaults = require('./modules/setDefaults');
 var wrapOnInstantiable = require('./modules/wrapOnInstantiable');
+var buildConfig = require('./modules/buildConfig');
 
 function djectFactory(config) {
     var registeredModules = {};
     var registeredSingletons = {};
 
-    config.cwd = typeof config.cwd === 'string' ? config.cwd : '.';
-    config.modulePaths = Object.prototype.toString.call(config.modulePaths) === '[object Array]' ? config.modulePaths : ['modules'];
+    config = buildConfig(config);
 
     function register(module) {
         var cleanModule = setDefaults(module);

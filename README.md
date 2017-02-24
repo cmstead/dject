@@ -111,16 +111,16 @@ instantiable objects and will be covered in the next section.
 DJect supports four metadata tags.  These tags tell the system how it should manage each dependency.
 
 - @name -- The name of the module; if not supplied, DJect will attempt to capture the name of the exported function
-- @dependencies -- A list of dependencies the module requires; Default is []
-- @singleton -- Whether the module is a singleton and should be preserved in memory; default is false
-- @instantiable -- Whether a module is an instantiable object; default is false
+- @dependencies -- A list of dependencies the module requires; Default is `[]`
+- @singleton -- Whether the module is a singleton and should be preserved in memory; default is `false`
+- @instantiable -- Whether a module is an instantiable object; default is `false`
 
 ## The DJect API
 
 The DJect API is small, but powerful.  With just a short list of commands, DJect can help you manage dependencies
 in a major way.
 
-- dject.new(config: object) -- Create a new DJect IoC container; var container = dject.new({});
+- dject.new(config: object) -- Create a new DJect IoC container; `var container = dject.new();`
 - container.register(module: object) -- Register a module for use as a dependency; use this for eager-loading
 modules into a DJect container
 - container.build(moduleName: string) -- Request a fully constructed module from the DJect container; if the module name
