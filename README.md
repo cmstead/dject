@@ -120,9 +120,9 @@ DJect supports four metadata tags.  These tags tell the system how it should man
 The DJect API is small, but powerful.  With just a short list of commands, DJect can help you manage dependencies
 in a major way.
 
-- dject.new(config: object) -- Create a new DJect IoC container; `var container = dject.new();`
-- container.register(module: object) -- Register a module for use as a dependency; use this for eager-loading
+- `dject.new(config: object)` -- Create a new DJect IoC container; `var container = dject.new();`
+- `container.register(module: object)` -- Register a module for use as a dependency; use this for eager-loading
 modules into a DJect container
-- container.build(moduleName: string) -- Request a fully constructed module from the DJect container; if the module name
+- `container.build(moduleName: string)` -- Request a fully constructed module from the DJect container; if the module name
 is not associated to a module already, DJect will reach out to the file system to create your module
-- container.getRegisteredModules -- Returns a list of all modules currently registered to a DJect container
+- `container.getRegisteredModules()` -- Returns a list of all modules currently registered to a DJect container
