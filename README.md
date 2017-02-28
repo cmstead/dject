@@ -35,7 +35,8 @@ var config = {
     modulePaths: [
         'side-load-modules',
         'testModules'
-    ]
+    ],
+    allowOverride: false
 };
 
 module.exports = require('dject').new(config);
@@ -111,7 +112,7 @@ instantiable objects and will be covered in the next section.
 DJect supports four metadata tags.  These tags tell the system how it should manage each dependency.
 
 - @name -- The name of the module; if not supplied, DJect will attempt to capture the name of the exported function
-- @dependencies -- A list of dependencies the module requires; Default is `[]`
+- @dependencies -- A list of dependencies the module requires; Default is array of function parameter names
 - @singleton -- Whether the module is a singleton and should be preserved in memory; default is `false`
 - @instantiable -- Whether a module is an instantiable object; default is `false`
 
@@ -121,8 +122,11 @@ The DJect API is small, but powerful.  With just a short list of commands, DJect
 in a major way.
 
 - `dject.new(config: object)` -- Create a new DJect IoC container; `var container = dject.new();`
-- `container.register(module: object)` -- Register a module for use as a dependency; use this for eager-loading
-modules into a DJect container
 - `container.build(moduleName: string)` -- Request a fully constructed module from the DJect container; if the module name
 is not associated to a module already, DJect will reach out to the file system to create your module
 - `container.getRegisteredModules()` -- Returns a list of all modules currently registered to a DJect container
+- `container.override(module: object)` -- Registers module, replacing existing module; throws error on no existing module 
+- `container.override(module: [object])` -- Registers array of modules, replacing existing modules; throws error on no existing module 
+- `container.register(module: object)` -- Register a module for use as a dependency; use this for eager-loading
+modules into a DJect container; throws error on duplicate module
+- `container.registerModules(modules: [object])` -- Registers an array of modules at once; throws error on duplicate module

@@ -7,7 +7,4 @@ function testComposed(testBase, otherBase) {
     };
 }
 
-testComposed['@name'] = 'testComposed';
-testComposed['@dependencies'] = ['testBase', 'otherBase'];
-
 module.exports = testComposed;

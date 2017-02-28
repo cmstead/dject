@@ -1,5 +1,7 @@
 'use strict';
 
+var functionHelper = require('./functionHelper');
+
 function checkPropOn(module) {
     return function (propName) {
         return typeof module[propName] !== 'undefined';
@@ -19,7 +21,7 @@ function setDefaults(module) {
 
     module['@name'] = getPropOrDefault('@name', module.name);
     module['@instantiable'] = getPropOrDefault('@instantiable', false);
-    module['@dependencies'] = getPropOrDefault('@dependencies', []);
+    module['@dependencies'] = getPropOrDefault('@dependencies', functionHelper.getParamNames(module));
 
     return module;
 }

@@ -13,7 +13,25 @@ function djectFactory(config) {
 
     config = buildConfig(config);
 
-    function register(module) {
+    function getModuleName (module){
+        return typeof module['@name'] !== 'undefined' ? module['@name'] : module.name;
+    }
+
+    function registerModules (moduleArray) {
+        moduleArray.forEach(register);
+    }
+
+    function register (module) {
+        var moduleName = getModuleName(module);
+
+        if(typeof registeredModules[moduleName] !== 'undefined') {
+            throw new InjectorError('Cannot reregister module "' + moduleName + '"');
+        }
+
+        registerModule(module);
+    }
+
+    function registerModule(module) {
         var cleanModule = setDefaults(module);
 
         registeredModules[cleanModule['@name']] = wrapOnInstantiable(cleanModule);
@@ -23,6 +41,24 @@ function djectFactory(config) {
         registeredSingletons[moduleDef['@name']] = moduleInstance;
 
         return moduleInstance;
+    }
+
+    function overrideModule (module) {
+        if(!config.allowOverride) {
+            throw new InjectorError('Set "allowOverride: true" in your config to allow module registration override');
+        }
+
+        var moduleName = getModuleName(module);
+
+        if(typeof registeredModules[moduleName] === 'undefined') {
+            throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
+        }
+
+        registerModule(module);
+    }
+
+    function overrideModules (moduleArray) {
+        moduleArray.forEach(overrideModule);
     }
 
     function getRegisteredModules () {
@@ -66,9 +102,11 @@ function djectFactory(config) {
         var fileName = [moduleName, 'js'].join('.');
         var validPaths = config.modulePaths.filter(statModule(fileName, config.cwd));
 
-        if(validPaths.length > 0) {
+        if(validPaths.length === 1) {
             var filePath = [config.cwd, validPaths[0], moduleName].join('/');
             register(require(filePath));
+        } else if (validPaths.length > 1) {
+            throw new InjectorError('Found duplicate module "' + moduleName + '" in paths ' + validPaths.join(', '));
         }
 
         return registeredModules[moduleName];
@@ -99,7 +137,10 @@ function djectFactory(config) {
     return {
         build: build,
         getRegisteredModules: getRegisteredModules,
-        register: register
+        override: overrideModule,
+        overrideModules: overrideModules,
+        register: register,
+        registerModules: registerModules
     };
 
 }
