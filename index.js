@@ -13,18 +13,18 @@ function djectFactory(config) {
 
     config = buildConfig(config);
 
-    function getModuleName (module){
+    function getModuleName(module) {
         return typeof module['@name'] !== 'undefined' ? module['@name'] : module.name;
     }
 
-    function registerModules (moduleArray) {
+    function registerModules(moduleArray) {
         moduleArray.forEach(register);
     }
 
-    function register (module) {
+    function register(module) {
         var moduleName = getModuleName(module);
 
-        if(typeof registeredModules[moduleName] !== 'undefined') {
+        if (typeof registeredModules[moduleName] !== 'undefined') {
             throw new InjectorError('Cannot reregister module "' + moduleName + '"');
         }
 
@@ -43,25 +43,25 @@ function djectFactory(config) {
         return moduleInstance;
     }
 
-    function overrideModule (module) {
-        if(!config.allowOverride) {
+    function overrideModule(module) {
+        if (!config.allowOverride) {
             throw new InjectorError('Set "allowOverride: true" in your config to allow module registration override');
         }
 
         var moduleName = getModuleName(module);
 
-        if(typeof registeredModules[moduleName] === 'undefined') {
+        if (typeof registeredModules[moduleName] === 'undefined') {
             throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
         }
 
         registerModule(module);
     }
 
-    function overrideModules (moduleArray) {
+    function overrideModules(moduleArray) {
         moduleArray.forEach(overrideModule);
     }
 
-    function getRegisteredModules () {
+    function getRegisteredModules() {
         return Object.keys(registeredModules);
     }
 
@@ -102,7 +102,7 @@ function djectFactory(config) {
         var fileName = [moduleName, 'js'].join('.');
         var validPaths = config.modulePaths.filter(statModule(fileName, config.cwd));
 
-        if(validPaths.length === 1) {
+        if (validPaths.length === 1) {
             var filePath = [config.cwd, validPaths[0], moduleName].join('/');
             register(require(filePath));
         } else if (validPaths.length > 1) {
@@ -134,8 +134,30 @@ function djectFactory(config) {
         return moduleDef;
     }
 
+    function setProp (obj, key, value) {
+        obj[key] = value;
+        return obj;
+    }
+
+    function loadSubtree(dependencies, submoduleName) {
+        return dependencies.concat([getDependencyTree(submoduleName)]);
+    }
+
+    function getDependencyTree(moduleName) {
+        var module = getModuleOrThrow(moduleName);
+        var hasDependencies = module['@dependencies'].length > 0;
+        
+        return {
+            name: moduleName,
+            instantiable: module['@instantiable'],
+            singleton: module['@singleton'],
+            dependencies: module['@dependencies'].reduce(loadSubtree, [])
+        };
+    }
+
     return {
         build: build,
+        getDependencyTree: getDependencyTree,
         getRegisteredModules: getRegisteredModules,
         override: overrideModule,
         overrideModules: overrideModules,

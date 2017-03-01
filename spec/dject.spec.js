@@ -63,7 +63,7 @@ describe('DJect', function () {
         });
 
         describe('Register Multiple Modules', function () {
-            
+
             it('should register an array of modules', function () {
                 var circularModules = require('./side-load-modules/circularModules');
 
@@ -74,6 +74,18 @@ describe('DJect', function () {
                 ]);
 
                 this.verify(prettyJson(container.getRegisteredModules()));
+            });
+
+        });
+
+        describe('Get Dependency Tree', function () {
+
+            it('should build a single-layer dependency tree', function () {
+                this.verify(prettyJson(container.getDependencyTree('testBase')));
+            });
+
+            it('should build a multi-layer dependency tree', function () {
+                this.verify(prettyJson(container.getDependencyTree('justInTime')));
             });
 
         });

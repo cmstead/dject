@@ -21,6 +21,7 @@ function setDefaults(module) {
 
     module['@name'] = getPropOrDefault('@name', module.name);
     module['@instantiable'] = getPropOrDefault('@instantiable', false);
+    module['@singleton'] = getPropOrDefault('@singleton', false);
     module['@dependencies'] = getPropOrDefault('@dependencies', functionHelper.getParamNames(module));
 
     return module;
