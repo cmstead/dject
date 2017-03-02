@@ -163,10 +163,18 @@ function djectFactory(config) {
         };
     }
 
+    function loadModule(moduleName) {
+        if (typeof registeredModules[moduleName] === 'undefined') {
+            var module = getModuleOrThrow(moduleName);
+            registeredModules[moduleName] = module;
+        }
+    }
+
     return {
         build: build,
         getDependencyTree: getDependencyTree,
         getRegisteredModules: getRegisteredModules,
+        loadModule: loadModule,
         override: overrideModule,
         overrideModules: overrideModules,
         register: register,
