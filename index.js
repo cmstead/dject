@@ -104,7 +104,15 @@ function djectFactory(config) {
 
         if (validPaths.length === 1) {
             var filePath = [config.cwd, validPaths[0], moduleName].join('/');
-            register(require(filePath));
+            var module;
+            var loadCount = 0;
+
+            // Sometimes the module is loaded as undefined.
+            while (typeof module === 'undefined' && ++loadCount <= 10) {
+                module = require(filePath);
+            }
+
+            register(module);
         } else if (validPaths.length > 1) {
             throw new InjectorError('Found duplicate module "' + moduleName + '" in paths ' + validPaths.join(', '));
         }
@@ -134,7 +142,7 @@ function djectFactory(config) {
         return moduleDef;
     }
 
-    function setProp (obj, key, value) {
+    function setProp(obj, key, value) {
         obj[key] = value;
         return obj;
     }
@@ -146,7 +154,7 @@ function djectFactory(config) {
     function getDependencyTree(moduleName) {
         var module = getModuleOrThrow(moduleName);
         var hasDependencies = module['@dependencies'].length > 0;
-        
+
         return {
             name: moduleName,
             instantiable: module['@instantiable'],

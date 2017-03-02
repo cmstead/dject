@@ -101,6 +101,7 @@ describe('DJect', function () {
             });
 
             it('should throw an error if dependency chain is too deep or circular', function () {
+                this.timeout(6000);
                 var circularModules = require('./side-load-modules/circularModules');
 
                 container.register(circularModules.circular1);
