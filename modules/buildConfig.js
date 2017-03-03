@@ -6,6 +6,7 @@ function buildConfig(config) {
     config.cwd = typeof config.cwd === 'string' ? config.cwd : '.';
     config.modulePaths = Object.prototype.toString.call(config.modulePaths) === '[object Array]' ? config.modulePaths : ['modules'];
     config.allowOverride = typeof config.allowOverride === 'boolean' ? config.allowOverride : false;
+    config.eagerLoad = typeof config.eagerLoad === 'boolean' ? config.eagerLoad : false;
 
     return config;
 }

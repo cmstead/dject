@@ -5,6 +5,8 @@ var approvals = require('approvals').configure(approvalsConfig).mocha('./spec/ap
 
 var dject = require('../index');
 var testBase = require('./side-load-modules/testBase');
+var circular1 = require('./side-load-modules/circular1');
+var circular2 = require('./side-load-modules/circular2');
 
 
 function prettyJson(obj) {
@@ -32,6 +34,20 @@ describe('DJect', function () {
 
     it('should throw if no config is provided', function () {
         assert.throws(dject.new, 'DJect requires a configuration object.');
+    });
+
+    it('should eager load modules when eagerLoad is set in config', function () {
+        var eagerConfig = Object.create(config);
+
+        eagerConfig.eagerLoad = true;
+        eagerConfig.modulePaths = [
+            'extraTestModules',
+            'side-load-modules'
+        ];
+
+        var container = dject.new(eagerConfig);
+
+        this.verify(prettyJson(container.getRegisteredModules()));
     });
 
     describe('Register and manage modules', function () {
@@ -65,12 +81,10 @@ describe('DJect', function () {
         describe('Register Multiple Modules', function () {
 
             it('should register an array of modules', function () {
-                var circularModules = require('./side-load-modules/circularModules');
-
                 container.registerModules([
                     testBase,
-                    circularModules.circular1,
-                    circularModules.circular2
+                    circular1,
+                    circular2
                 ]);
 
                 this.verify(prettyJson(container.getRegisteredModules()));
@@ -102,10 +116,9 @@ describe('DJect', function () {
 
             it('should throw an error if dependency chain is too deep or circular', function () {
                 this.timeout(6000);
-                var circularModules = require('./side-load-modules/circularModules');
 
-                container.register(circularModules.circular1);
-                container.register(circularModules.circular2);
+                container.loadModule('circular1');
+                container.loadModule('circular2');
 
                 assert.throws(container.build.bind(null, 'circular1'), 'Injector Error: Dependency chain is either circular or too deep to process.');
             });
@@ -130,6 +143,23 @@ describe('DJect', function () {
             });
         });
 
+        describe('New subcontainer', function () {
+            
+            it('should preregister all currently loaded modules', function () {
+                container.build('justInTime');
+                var subcontainer = container.new();
+
+                this.verify(prettyJson(subcontainer.getRegisteredModules()));
+            });
+
+            it('should allow overrides of dependencies', function () {
+                container.build('justInTime');
+                var subcontainer = container.new();
+
+                assert.doesNotThrow(subcontainer.override.bind(null, function justInTime(){}));
+            });
+
+        });
 
     });
 

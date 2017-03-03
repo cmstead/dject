@@ -6,6 +6,7 @@ var InjectorError = require('./modules/injectorError');
 var setDefaults = require('./modules/setDefaults');
 var wrapOnInstantiable = require('./modules/wrapOnInstantiable');
 var buildConfig = require('./modules/buildConfig');
+var loadRemoteModules = require('./modules/loadRemoteModules');
 
 function djectFactory(config) {
     var registeredModules = {};
@@ -170,11 +171,31 @@ function djectFactory(config) {
         }
     }
 
+    function buildSubcontainerConfig() {
+        var newConfig = Object.create(config);
+        newConfig.allowOverride = true;
+
+        return newConfig;
+    }
+
+    function newSubcontainer() {
+        var subcontainer = buildNewContainer(buildSubcontainerConfig());
+
+        if (!config.eagerLoad) {
+            var modules = Object.keys(registeredModules).forEach(function (moduleName) {
+                subcontainer.loadModule(moduleName);
+            });
+        }
+
+        return subcontainer;
+    }
+
     return {
         build: build,
         getDependencyTree: getDependencyTree,
         getRegisteredModules: getRegisteredModules,
         loadModule: loadModule,
+        new: newSubcontainer,
         override: overrideModule,
         overrideModules: overrideModules,
         register: register,
@@ -183,14 +204,20 @@ function djectFactory(config) {
 
 }
 
-function buildNew(config) {
+function buildNewContainer(config) {
     if (typeof config !== 'object') {
         throw new Error('DJect requires a configuration object.');
     }
 
-    return djectFactory(config);
+    var container = djectFactory(config);
+
+    if (config.eagerLoad === true) {
+        config.modulePaths.forEach(loadRemoteModules(config.cwd, container));
+    }
+
+    return container;
 }
 
 module.exports = {
-    new: buildNew
+    new: buildNewContainer
 };

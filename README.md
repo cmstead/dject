@@ -36,7 +36,8 @@ var config = {
         'side-load-modules',
         'testModules'
     ],
-    allowOverride: false
+    allowOverride: false,
+    eagerLoad: false
 };
 
 module.exports = require('dject').new(config);
@@ -49,7 +50,9 @@ However, because your container is built within your project, no two projects wi
 ### The config parameters:
 
 - cwd -- The directory DJect will prepend all paths with; default is '.'
-- modulePaths -- An array of all paths where a module might be found; default is ['modules']
+- modulePaths -- An array of all paths where a module might be found; default is ['modules'],
+- allowOverride -- Configure whether overriding a module is permitted from within the container scope; default is false
+- eagerLoad -- Tells DJect to eagerly load all modules in provided directories; default is false
 
 ## Defining DJect Consumable Modules
 
@@ -127,6 +130,8 @@ is not associated to a module already, DJect will reach out to the file system t
 - `container.getDependencyTree(moduleName: string)` -- Returns a tree of all dependencies a module depends upon
 - `container.getRegisteredModules()` -- Returns a list of all modules currently registered to a DJect container
 - `container.loadModule(moduleName: string)` -- Loads a module into memory eagerly
+- `container.new()` -- Builds new container which inherits all dependencies from parent container; subcontainer 
+always allows override of original dependencies, which is isolated to the scope and lifetime of the new subcontainer
 - `container.override(module: object)` -- Registers module, replacing existing module; throws error on no existing module 
 - `container.override(module: [object])` -- Registers array of modules, replacing existing modules; throws error on no existing module 
 - `container.register(module: object)` -- Register a module for use as a dependency; use this for eager-loading
