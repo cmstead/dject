@@ -76,7 +76,16 @@ function djectFactory(config) {
         try {
             var dependencies = moduleDef['@dependencies'].map(build);
         } catch (e) {
-            throw new InjectorError('Dependency chain is either circular or too deep to process.');
+            var message = 'Dependency chain is either circular or too deep to process:';
+            var errorMessage = typeof e.message === 'string' ? e.message : '';
+            var callstackError = errorMessage.match(/call stack/) !== null;
+            var injectorError = errorMessage.match(/Injector Error\:/) !== null;
+
+            if(!callstackError || injectorError) {
+                throw e;
+            } else {
+                throw new InjectorError(message + ' ' + e.message);
+            }
         }
 
         return moduleDef.apply(null, dependencies);

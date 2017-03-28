@@ -120,7 +120,7 @@ describe('DJect', function () {
                 container.loadModule('circular1');
                 container.loadModule('circular2');
 
-                assert.throws(container.build.bind(null, 'circular1'), 'Injector Error: Dependency chain is either circular or too deep to process.');
+                assert.throws(container.build.bind(null, 'circular1'), 'Injector Error: Dependency chain is either circular or too deep to process: Maximum call stack size exceeded');
             });
 
             it('should manage singleton modules correctly', function () {
