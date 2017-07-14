@@ -2,11 +2,11 @@
 
 var fs = require('fs');
 
-var InjectorError = require('./modules/injectorError');
-var setDefaults = require('./modules/setDefaults');
-var wrapOnInstantiable = require('./modules/wrapOnInstantiable');
-var buildConfig = require('./modules/buildConfig');
-var loadRemoteModules = require('./modules/loadRemoteModules');
+var InjectorError = require('./bin/injectorError');
+var setDefaults = require('./bin/setDefaults');
+var wrapOnInstantiable = require('./bin/wrapOnInstantiable');
+var buildConfig = require('./bin/buildConfig');
+var loadRemoteModules = require('./bin/loadRemoteModules');
 
 function djectFactory(config) {
     var registeredModules = {};
@@ -152,18 +152,12 @@ function djectFactory(config) {
         return moduleDef;
     }
 
-    function setProp(obj, key, value) {
-        obj[key] = value;
-        return obj;
-    }
-
     function loadSubtree(dependencies, submoduleName) {
         return dependencies.concat([getDependencyTree(submoduleName)]);
     }
 
     function getDependencyTree(moduleName) {
         var module = getModuleOrThrow(moduleName);
-        var hasDependencies = module['@dependencies'].length > 0;
 
         return {
             name: moduleName,
@@ -191,7 +185,7 @@ function djectFactory(config) {
         var subcontainer = buildNewContainer(buildSubcontainerConfig());
 
         if (!config.eagerLoad) {
-            var modules = Object.keys(registeredModules).forEach(function (moduleName) {
+            Object.keys(registeredModules).forEach(function (moduleName) {
                 subcontainer.loadModule(moduleName);
             });
         }

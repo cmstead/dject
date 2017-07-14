@@ -1,7 +1,6 @@
 var assert = require('chai').assert;
 
-var approvalsConfig = require('./approvalsConfig/approvalsConfig');
-var approvals = require('approvals').configure(approvalsConfig).mocha('./spec/approvals');
+require('./approvalsConfig/approvalsConfig');
 
 var dject = require('../index');
 var testBase = require('./side-load-modules/testBase');
@@ -19,7 +18,7 @@ describe('DJect', function () {
 
     beforeEach(function () {
         config = {
-            cwd: './spec',
+            cwd: './test',
             modulePaths: [
                 'side-load-modules',
                 'testModules'
@@ -144,7 +143,7 @@ describe('DJect', function () {
         });
 
         describe('New subcontainer', function () {
-            
+
             it('should preregister all currently loaded modules', function () {
                 container.build('justInTime');
                 var subcontainer = container.new();
