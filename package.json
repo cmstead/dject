@@ -4,7 +4,7 @@
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha ./spec/*.js"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
