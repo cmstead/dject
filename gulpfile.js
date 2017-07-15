@@ -6,12 +6,15 @@ const istanbul = require('gulp-istanbul');
 const eslint = require('gulp-eslint');
 const babel = require('gulp-babel');
 const concat = require('gulp-concat');
+const wrapInIIFE = require('./dev-tools/gulp-wrap-in-iife');
 
 const sourceFiles = [
-    'bin/**/*.js',
-    'signet-types.js',
+    'bin/buildConfig.js',
+    'bin/functionHelper.js',
+    'bin/injectorError.js',
+    'bin/setDefaults.js',
+    'bin/wrapOnInstantiable.js',
     'index.js',
-    '!node_modules/**'
 ];
 
 const testFiles = [
@@ -19,11 +22,12 @@ const testFiles = [
 ];
 
 gulp.task('babel', () => {
-    return gulp.src('./index.js')
+    return gulp.src(sourceFiles)
         .pipe(babel({
             presets: ['env']
         }))
-        .pipe(concat('dataMother.js'))
+        .pipe(concat('dject.js'))
+        .pipe(wrapInIIFE())
         .pipe(gulp.dest('dist'));
 });
 
