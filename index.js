@@ -220,6 +220,14 @@
             }
         }
 
+        function registerModuleWithName(moduleName, value) {
+            var cleanModule = wrapOnInstantiable(value);
+            cleanModule = setDefaults(cleanModule);
+            cleanModule['@name'] = moduleName;
+
+            registeredModules[moduleName] = cleanModule;
+        }
+
         function buildSubcontainerConfig() {
             var newConfig = Object.create(config);
             newConfig.allowOverride = true;
@@ -231,9 +239,12 @@
             var subcontainer = buildNewContainer(buildSubcontainerConfig());
 
             if (!config.eagerLoad) {
-                Object.keys(registeredModules).forEach(function (moduleName) {
-                    subcontainer.loadModule(moduleName);
-                });
+                Object
+                    .keys(registeredModules)
+                    .forEach(function (moduleName) {
+                        var moduleValue = registeredModules[moduleName];
+                        subcontainer.registerModuleWithName(moduleName, moduleValue);
+                    });
             }
 
             return subcontainer;
@@ -244,6 +255,7 @@
             getDependencyTree: getDependencyTree,
             getRegisteredModules: getRegisteredModules,
             loadModule: loadModule,
+            registerModuleWithName: registerModuleWithName,
             new: newSubcontainer,
             override: overrideModule,
             overrideModules: overrideModules,

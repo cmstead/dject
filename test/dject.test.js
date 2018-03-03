@@ -75,6 +75,22 @@ describe('DJect', function () {
                 this.verify(prettyJson(container.build('testComposed')));
             });
 
+            it('should throw an error if function is unparseable', function () {
+                function register () {
+                    container.register(() => {});
+                }
+
+                assert.throws(register, 'Unable to parse arguments from function or expression: anonymous');
+            });
+
+            it('should throw an error if value is not a function', function () {
+                function register () {
+                    container.register({ foo: 'bar' });
+                }
+
+                assert.throws(register, 'Cannot register module. Expected function, but got object with value {\n    "foo": "bar",\n    "@instantiable": false,\n    "@singleton": false\n}');
+            })
+
         });
 
         describe('Register Multiple Modules', function () {

@@ -26,6 +26,8 @@
 	});
 	'use strict';
 	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
 	(function (functionHelperFactory) {
 	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
 	
@@ -37,8 +39,18 @@
 	})(function () {
 	    'use strict';
 	
+	    function getFunctionName(fn) {
+	        return fn.name === '' ? 'anonymous' : fn.name;
+	    }
+	
 	    function getArgStr(fn) {
-	        return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
+	        try {
+	            return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
+	        } catch (e) {
+	            var message = typeof fn === 'function' ? 'Unable to parse arguments from function or expression: ' + getFunctionName(fn) : 'Cannot register module. Expected function, but got ' + (typeof fn === 'undefined' ? 'undefined' : _typeof(fn)) + ' with value ' + JSON.stringify(fn, null, 4);
+	
+	            throw new Error(message);
+	        }
 	    }
 	
 	    function getParamNames(fn) {
@@ -389,6 +401,14 @@
 	            }
 	        }
 	
+	        function registerModuleWithName(moduleName, value) {
+	            var cleanModule = wrapOnInstantiable(value);
+	            cleanModule = setDefaults(cleanModule);
+	            cleanModule['@name'] = moduleName;
+	
+	            registeredModules[moduleName] = cleanModule;
+	        }
+	
 	        function buildSubcontainerConfig() {
 	            var newConfig = Object.create(config);
 	            newConfig.allowOverride = true;
@@ -401,7 +421,8 @@
 	
 	            if (!config.eagerLoad) {
 	                Object.keys(registeredModules).forEach(function (moduleName) {
-	                    subcontainer.loadModule(moduleName);
+	                    var moduleValue = registeredModules[moduleName];
+	                    subcontainer.registerModuleWithName(moduleName, moduleValue);
 	                });
 	            }
 	
@@ -413,6 +434,7 @@
 	            getDependencyTree: getDependencyTree,
 	            getRegisteredModules: getRegisteredModules,
 	            loadModule: loadModule,
+	            registerModuleWithName: registerModuleWithName,
 	            new: newSubcontainer,
 	            override: overrideModule,
 	            overrideModules: overrideModules,

@@ -10,8 +10,23 @@
 })(function () {
     'use strict';
 
+    function getFunctionName(fn) {
+        return fn.name === ''
+            ? 'anonymous'
+            : fn.name;
+    }
+
     function getArgStr(fn) {
-        return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
+        try {
+            return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
+        } catch (e) {
+            var message = typeof fn === 'function'
+                ? 'Unable to parse arguments from function or expression: ' + getFunctionName(fn)
+                : 'Cannot register module. Expected function, but got ' + typeof fn +
+                ' with value ' + JSON.stringify(fn, null, 4);
+
+            throw new Error(message);
+        }
     }
 
     function getParamNames(fn) {
