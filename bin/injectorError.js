@@ -31,10 +31,10 @@
         return this;
     }
 
-    InjectorError.prototype = {
-        toString: function () {
-            return this.name + ': ' + this.messageBody;
-        }
+    InjectorError.prototype = Object.create(Error.prototype);
+
+    InjectorError.prototype.toString = function () {
+        return this.name + ': ' + this.messageBody;
     };
 
     return InjectorError;

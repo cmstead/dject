@@ -68,12 +68,16 @@
             moduleArray.forEach(register);
         }
 
-        function register(module) {
-            var moduleName = getModuleName(module);
+        function register(module, optionalName) {
+            var moduleName = typeof optionalName === 'string'
+                ? optionalName
+                : getModuleName(module);
 
             if (typeof registeredModules[moduleName] !== 'undefined') {
                 throw new InjectorError('Cannot reregister module "' + moduleName + '"');
             }
+
+            module['@name'] = moduleName;
 
             registerModule(module);
         }
@@ -90,17 +94,21 @@
             return moduleInstance;
         }
 
-        function overrideModule(module) {
+        function overrideModule(module, optionalName) {
             if (!config.allowOverride) {
                 throw new InjectorError('Set "allowOverride: true" in your config to allow module registration override');
             }
 
-            var moduleName = getModuleName(module);
+            var moduleName = typeof optionalName === 'string'
+                ? optionalName
+                : getModuleName(module);
 
             if (typeof registeredModules[moduleName] === 'undefined') {
                 throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
             }
 
+            module['@name'] = moduleName;
+            
             registerModule(module);
         }
 
@@ -220,14 +228,6 @@
             }
         }
 
-        function registerModuleWithName(moduleName, value) {
-            var cleanModule = wrapOnInstantiable(value);
-            cleanModule = setDefaults(cleanModule);
-            cleanModule['@name'] = moduleName;
-
-            registeredModules[moduleName] = cleanModule;
-        }
-
         function buildSubcontainerConfig() {
             var newConfig = Object.create(config);
             newConfig.allowOverride = true;
@@ -243,7 +243,7 @@
                     .keys(registeredModules)
                     .forEach(function (moduleName) {
                         var moduleValue = registeredModules[moduleName];
-                        subcontainer.registerModuleWithName(moduleName, moduleValue);
+                        subcontainer.register(moduleValue);
                     });
             }
 
@@ -255,10 +255,11 @@
             getDependencyTree: getDependencyTree,
             getRegisteredModules: getRegisteredModules,
             loadModule: loadModule,
-            registerModuleWithName: registerModuleWithName,
             new: newSubcontainer,
+
             override: overrideModule,
             overrideModules: overrideModules,
+
             register: register,
             registerModules: registerModules
         };

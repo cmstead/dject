@@ -15,5 +15,6 @@ TestInstantiable.prototype = {
 
 TestInstantiable['@instantiable'] = true;
 TestInstantiable['@dependencies'] = ['testBase', 'otherBase'];
+TestInstantiable['@name'] = 'TestInstantiable';
 
 module.exports = TestInstantiable;
