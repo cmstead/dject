@@ -68,14 +68,33 @@
             moduleArray.forEach(register);
         }
 
-        function register(module, optionalName) {
-            var moduleName = typeof optionalName === 'string'
+        function throwOnModuleDoesNotExist(moduleName) {
+            var moduleDoesNotExist = config.errorOnModuleDNE && getValidPaths(moduleName).length === 0;
+
+            if (moduleDoesNotExist) {
+                var errorMessage = 'Cannot register module ' + moduleName + ', because it does not exist in the filesystem and errorOnModuleDNE is true.';
+                throw new Error(errorMessage);
+            }
+        }
+
+        function throwOnReregister(InjectorError, moduleName) {
+            if (typeof registeredModules[moduleName] !== 'undefined') {
+                var errorMessage = 'Cannot reregister module "' + moduleName + '"';
+                throw new InjectorError(errorMessage);
+            }
+        }
+
+        function getModuleNameOrOption(optionalName, module) {
+            return typeof optionalName === 'string'
                 ? optionalName
                 : getModuleName(module);
+        }
 
-            if (typeof registeredModules[moduleName] !== 'undefined') {
-                throw new InjectorError('Cannot reregister module "' + moduleName + '"');
-            }
+        function register(module, optionalName) {
+            var moduleName = getModuleNameOrOption(optionalName, module);
+
+            throwOnModuleDoesNotExist(moduleName);
+            throwOnReregister(InjectorError, moduleName);
 
             module['@name'] = moduleName;
 
@@ -94,21 +113,23 @@
             return moduleInstance;
         }
 
+        function throwOnUnregistered(moduleName) {
+            if (typeof registeredModules[moduleName] === 'undefined') {
+                throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
+            }
+        }
+
         function overrideModule(module, optionalName) {
             if (!config.allowOverride) {
                 throw new InjectorError('Set "allowOverride: true" in your config to allow module registration override');
             }
 
-            var moduleName = typeof optionalName === 'string'
-                ? optionalName
-                : getModuleName(module);
+            var moduleName = getModuleNameOrOption(optionalName, module);
 
-            if (typeof registeredModules[moduleName] === 'undefined') {
-                throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
-            }
+            throwOnUnregistered(moduleName);
 
             module['@name'] = moduleName;
-            
+
             registerModule(module);
         }
 
@@ -126,22 +147,29 @@
             return moduleDef['@singleton'] ? getSingleton(moduleDef) : buildNew(moduleDef);
         }
 
-        function buildNew(moduleDef) {
-            try {
-                var dependencies = moduleDef['@dependencies'].map(build);
-            } catch (e) {
-                var message = 'Dependency chain is either circular or too deep to process:';
-                var errorMessage = typeof e.message === 'string' ? e.message : '';
-                var callstackError = errorMessage.match(/call stack/) !== null;
-                var injectorError = errorMessage.match(/Injector Error\:/) !== null;
+        function throwOnInjectorOrCallStackError(error) {
+            var message = 'Dependency chain is either circular or too deep to process:';
+            var errorMessage = typeof error.message === 'string' ? error.message : '';
+            var callstackError = errorMessage.match(/call stack/) !== null;
+            var injectorError = errorMessage.match(/Injector Error\:/) !== null;
 
-                if (!callstackError || injectorError) {
-                    throw e;
-                } else {
-                    throw new InjectorError(message + ' ' + e.message);
-                }
+            if (!callstackError || injectorError) {
+                throw error;
+            } else {
+                throw new InjectorError(message + ' ' + error.message);
             }
+        }
 
+        function buildDependenciesOrThrow(moduleDef) {
+            try {
+                return moduleDef['@dependencies'].map(build);
+            } catch (error) {
+                throwOnInjectorOrCallStackError(error)
+            }
+        }
+
+        function buildNew(moduleDef) {
+            var dependencies = buildDependenciesOrThrow(moduleDef)
             return moduleDef.apply(null, dependencies);
         }
 
@@ -152,6 +180,14 @@
             return singletonExists ? registeredSingleton : registerSingleton(moduleDef, buildNew(moduleDef));
         }
 
+        function throwOnNoModule(moduleDef, moduleName) {
+            if (typeof moduleDef === 'undefined') {
+                throw new InjectorError('Module "' + moduleName + '" does not exist');
+            }
+
+            return moduleDef;
+        }
+
         function getModuleOrThrow(moduleName) {
             var moduleDef = registeredModules[moduleName];
 
@@ -160,28 +196,6 @@
             }
 
             return throwOnNoModule(moduleDef, moduleName);
-        }
-
-        function loadFileSystemModule(moduleName) {
-            var fileName = [moduleName, 'js'].join('.');
-            var validPaths = config.modulePaths.filter(statModule(fileName, config.cwd));
-
-            if (validPaths.length === 1) {
-                var filePath = [config.cwd, validPaths[0], moduleName].join('/');
-                var module;
-                var loadCount = 0;
-
-                // Sometimes the module is loaded as undefined.
-                while (typeof module === 'undefined' && ++loadCount <= 10) {
-                    module = require(filePath);
-                }
-
-                register(module);
-            } else if (validPaths.length > 1) {
-                throw new InjectorError('Found duplicate module "' + moduleName + '" in paths ' + validPaths.join(', '));
-            }
-
-            return registeredModules[moduleName];
         }
 
         function statModule(moduleName, cwd) {
@@ -198,12 +212,44 @@
             }
         }
 
-        function throwOnNoModule(moduleDef, moduleName) {
-            if (typeof moduleDef === 'undefined') {
-                throw new InjectorError('Module "' + moduleName + '" does not exist');
+        function getValidPaths(moduleName) {
+            var fileName = [moduleName, 'js'].join('.');
+            return config.modulePaths.filter(statModule(fileName, config.cwd));
+        }
+
+        function tryLoadModule(filePath) {
+            var module;
+            var loadCount = 0;
+
+            // Sometimes the module is loaded as undefined.
+            while (typeof module === 'undefined' && ++loadCount <= 10) {
+                module = require(filePath);
             }
 
-            return moduleDef;
+            return module;
+        }
+
+        function registerFilesystemModule(validPaths, moduleName) {
+            var filePath = [config.cwd, validPaths[0], moduleName].join('/');
+            var module = tryLoadModule(filePath);
+
+            register(module);
+        }
+
+        function registerFilesystemModuleOrThrow(validPaths, moduleName) {
+            if (validPaths.length === 1) {
+                registerFilesystemModule(validPaths, moduleName)
+            } else if (validPaths.length > 1) {
+                throw new InjectorError('Found duplicate module "' + moduleName + '" in paths ' + validPaths.join(', '));
+            }
+
+        }
+
+        function loadFileSystemModule(moduleName) {
+            var validPaths = getValidPaths(moduleName);
+
+            registerFilesystemModuleOrThrow(validPaths, moduleName)
+            return registeredModules[moduleName];
         }
 
         function loadSubtree(dependencies, submoduleName) {

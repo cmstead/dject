@@ -89,8 +89,38 @@ describe('DJect', function () {
                 }
 
                 assert.throws(register, 'Cannot register module. Expected function, but got object with value {\n    "foo": "bar",\n    "@instantiable": false,\n    "@singleton": false\n}');
-            })
+            });
 
+            
+            it('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
+                const testConfig = {
+                    cwd: './test',
+                    modulePaths: [
+                        'testModules'
+                    ],
+                    errorOnModuleDNE: true
+                };
+
+                const container = dject.new(testConfig);
+
+                const expectedError = 'Cannot register module myDependency, because it does not exist in the filesystem and errorOnModuleDNE is true.'
+                assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
+            });
+            
+            it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
+                const testConfig = {
+                    cwd: './test',
+                    modulePaths: [
+                        'testModules'
+                    ],
+                    errorOnModuleDNE: true
+                };
+
+                const container = dject.new(testConfig);
+
+                assert.doesNotThrow(container.register.bind(null, function justInTime() {}));
+            });
+            
         });
 
         describe('Register Multiple Modules', function () {
