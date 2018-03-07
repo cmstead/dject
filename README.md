@@ -341,6 +341,10 @@ modules into a DJect container; throws error on duplicate module
 
 ## Version History ##
 
+**v1.8.0**
+
+- Updated configuration options to throw if module to be registered does not exist in the filesystem
+
 **v1.7.0**
 
 - Enhanced readme to show API usage examples
