@@ -16,9 +16,20 @@
             : fn.name;
     }
 
+    function getFunctionArgs(fn) {
+        var functionSource = fn.toString();
+        var baseFunctionMatch = functionSource.match(/function\s.*?\(([^)]*)\)/);
+
+        if (baseFunctionMatch !== null) {
+            return baseFunctionMatch[1];
+        } else {
+            return functionSource.match(/.*\(([^)]*)\)\s*\=\>/)[1];
+        }
+    }
+
     function getArgStr(fn) {
         try {
-            return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
+            return getFunctionArgs(fn);
         } catch (e) {
             var message = typeof fn === 'function'
                 ? 'Unable to parse arguments from function or expression: ' + getFunctionName(fn)

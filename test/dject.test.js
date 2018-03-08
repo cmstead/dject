@@ -70,17 +70,16 @@ describe('DJect', function () {
                 this.verify(prettyJson(container.build('testBase')));
             });
 
+            
+            it('should register a module defined with an arrow function', function () {
+                container.register(() => ({ foo: 'bar'}), 'arrowModule');
+                this.verify(prettyJson(container.build('arrowModule')));
+            });
+            
+
             it('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
                 this.verify(prettyJson(container.build('testComposed')));
-            });
-
-            it('should throw an error if function is unparseable', function () {
-                function register () {
-                    container.register(() => {});
-                }
-
-                assert.throws(register, 'Unable to parse arguments from function or expression: anonymous');
             });
 
             it('should throw an error if value is not a function', function () {
@@ -90,7 +89,6 @@ describe('DJect', function () {
 
                 assert.throws(register, 'Cannot register module. Expected function, but got object with value {\n    "foo": "bar",\n    "@instantiable": false,\n    "@singleton": false\n}');
             });
-
             
             it('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
