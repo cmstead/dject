@@ -30,6 +30,6 @@ function BeyondCompare4 () {
 
         }
     };
-};
+}
 
 module.exports = BeyondCompare4;

@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
 
-require('./approvalsConfig/approvalsConfig');
+require('./testUtils/approvalsConfig');
 
 var dject = require('../index');
 var testBase = require('./side-load-modules/testBase');
