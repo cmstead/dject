@@ -72,18 +72,18 @@ describe('DJect', function () {
             });
 
             
-            it('should register a module defined with an arrow function', function () {
+            it.skip('should register a module defined with an arrow function', function () {
                 container.register(() => ({ foo: 'bar'}), 'arrowModule');
                 this.verify(prettyJson(container.build('arrowModule')));
             });
             
 
-            it('should allow registering a module with dependencies', function () {
+            it.skip('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
                 this.verify(prettyJson(container.build('testComposed')));
             });
 
-            it('should throw an error if value is not a function', function () {
+            it.skip('should throw an error if value is not a function', function () {
                 function register () {
                     container.register({ foo: 'bar' });
                 }
@@ -91,7 +91,7 @@ describe('DJect', function () {
                 assert.throws(register, 'Cannot register module. Expected function, but got object with value {\n    "foo": "bar",\n    "@instantiable": false,\n    "@singleton": false\n}');
             });
             
-            it('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
+            it.skip('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: './test',
                     modulePaths: [
@@ -106,7 +106,7 @@ describe('DJect', function () {
                 assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
             });
             
-            it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
+            it.skip('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: './test',
                     modulePaths: [

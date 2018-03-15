@@ -9,10 +9,11 @@
 })(function djectLoader(container) {
     'use strict';
 
-    function djectFactory(registry) {
+    function djectFactory(containerFactory, registryFactory) {
 
         function newContainer(config) {
-            const localRegistry = registry();
+            const coreContainer = containerFactory();
+            const localRegistry = registryFactory(coreContainer);
 
             if(typeof config === 'undefined') {
                 throw new Error('Dject requires a configuration object');
@@ -33,6 +34,9 @@
         };
     }
 
-    container.register('dject', djectFactory, ['registry']);
+    container.register('dject', djectFactory, [
+        'containerFactory',
+        'registryFactory'
+    ]);
 });
 

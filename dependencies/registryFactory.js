@@ -9,16 +9,15 @@
 })(function (container) {
     'use strict';
 
-    function registryFactory(containerFactory, fileLoader, moduleUtils) {
+    function registryFactoryBuilder(fileLoader, moduleUtils) {
 
-        return function() {
-            var registryContainer = containerFactory();
+        return function(coreContainer) {
 
             function registerModule(moduleInstance) {
                 var name = moduleUtils.getModuleName(moduleInstance);
                 var dependencies = moduleUtils.getModuleDependencies(moduleInstance);
 
-                registryContainer.register(name, moduleInstance, dependencies);
+                coreContainer.register(name, moduleInstance, dependencies);
             }
 
             function registerAllModulesFromPaths(cwd, modulePaths) {
@@ -28,7 +27,7 @@
             }
 
             function getRegisteredModules() {
-                var containerModules = registryContainer.getModuleRegistry();
+                var containerModules = coreContainer.getModuleRegistry();
 
                 return Object.keys(containerModules);
             }
@@ -43,10 +42,9 @@
     }
 
     var dependencies = [
-        'containerFactory',
         'fileLoader',
         'moduleUtils'
     ]
-    container.register('registry', registryFactory, dependencies);
+    container.register('registryFactory', registryFactoryBuilder, dependencies);
 
 });
