@@ -55,7 +55,6 @@ describe('DJect', function () {
 
         beforeEach(function () {
             container = dject.new(config);
-            console.log(container.getRegisteredModules());
         });
 
         describe('Register Module', function () {
@@ -72,23 +71,23 @@ describe('DJect', function () {
             });
 
             
-            it.skip('should register a module defined with an arrow function', function () {
+            it('should register a module defined with an arrow function', function () {
                 container.register(() => ({ foo: 'bar'}), 'arrowModule');
                 this.verify(prettyJson(container.build('arrowModule')));
             });
             
 
-            it.skip('should allow registering a module with dependencies', function () {
+            it('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
                 this.verify(prettyJson(container.build('testComposed')));
             });
 
-            it.skip('should throw an error if value is not a function', function () {
+            it('should throw an error if value is not a function', function () {
                 function register () {
                     container.register({ foo: 'bar' });
                 }
 
-                assert.throws(register, 'Cannot register module. Expected function, but got object with value {\n    "foo": "bar",\n    "@instantiable": false,\n    "@singleton": false\n}');
+                assert.throws(register, 'Cannot register module. Expected function, but got object with value');
             });
             
             it.skip('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
@@ -106,7 +105,7 @@ describe('DJect', function () {
                 assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
             });
             
-            it.skip('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
+            it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: './test',
                     modulePaths: [
@@ -122,7 +121,7 @@ describe('DJect', function () {
             
         });
 
-        describe.skip('Register Multiple Modules', function () {
+        describe('Register Multiple Modules', function () {
 
             it('should register an array of modules', function () {
                 container.registerModules([

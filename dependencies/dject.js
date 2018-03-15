@@ -1,6 +1,6 @@
 (function (loader) {
 
-    if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         module.exports = loader;
     } else {
         window.djectLoaders.djectLoader = loader;
@@ -9,23 +9,25 @@
 })(function djectLoader(container) {
     'use strict';
 
-    function djectFactory(containerFactory, registryFactory) {
+    function djectFactory(
+        baseUtils,
+        containerFactory,
+        moduleBuilderFactory,
+        registryFactory
+    ) {
 
         function newContainer(config) {
             const coreContainer = containerFactory();
-            const localRegistry = registryFactory(coreContainer);
-
-            if(typeof config === 'undefined') {
-                throw new Error('Dject requires a configuration object');
-            }
-
-            if(config.eagerLoad) {
-                localRegistry.registerAllModulesFromPaths(config.cwd, config.modulePaths);
-            }
+            const registry = registryFactory(config, coreContainer);
+            const moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+            
+            baseUtils.throwOnBadConfig(config);
+            baseUtils.performEagerLoad(config, registry)
 
             return {
-                getRegisteredModules: localRegistry.getRegisteredModules,
-                register: localRegistry.registerModule
+                build: moduleBuilder.build,
+                getRegisteredModules: registry.getRegisteredModules,
+                register: registry.registerModule
             };
         }
 
@@ -35,7 +37,9 @@
     }
 
     container.register('dject', djectFactory, [
+        'baseUtils',
         'containerFactory',
+        'moduleBuilderFactory',
         'registryFactory'
     ]);
 });

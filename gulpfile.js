@@ -9,11 +9,7 @@ const concat = require('gulp-concat');
 const wrapInIIFE = require('./dev-tools/gulp-wrap-in-iife');
 
 const sourceFiles = [
-    'bin/buildConfig.js',
-    'bin/functionHelper.js',
-    'bin/injectorError.js',
-    'bin/setDefaults.js',
-    'bin/wrapOnInstantiable.js',
+    'dependencies/**/*.js',
     'index.js',
 ];
 

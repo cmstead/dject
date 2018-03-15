@@ -9,12 +9,18 @@
 })(function (container) {
     'use strict';
 
-    function fsFake() {
+    function fsFunctionFake() {
         throw new Error('Cannot load filesystem modules when not in NodeJS environmet');
     }
 
     function fsFactory() {
         var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+
+        var fsFake = {
+            readdirSync: fsFunctionFake,
+            lstatSync: fsFunctionFake
+        };
+        
         return isNode ? require('fs') : fsFake;
     }
 

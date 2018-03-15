@@ -11,13 +11,23 @@
 
     function registryFactoryBuilder(fileLoader, moduleUtils) {
 
-        return function(coreContainer) {
+        return function (config, coreContainer) {
 
-            function registerModule(moduleInstance) {
-                var name = moduleUtils.getModuleName(moduleInstance);
+            function registerModule(moduleInstance, moduleName) {
                 var dependencies = moduleUtils.getModuleDependencies(moduleInstance);
+                var name = typeof moduleName === 'string'
+                    ? moduleName
+                    : moduleUtils.getModuleName(moduleInstance);
 
                 coreContainer.register(name, moduleInstance, dependencies);
+            }
+
+            function loadModule(moduleName) {
+                var cwd = config.cwd;
+                var modulePaths = config.modulePaths
+                var moduleInstance = fileLoader.loadFileFromPaths(cwd, modulePaths, moduleName);
+
+                registerModule(moduleInstance);
             }
 
             function registerAllModulesFromPaths(cwd, modulePaths) {
@@ -34,6 +44,7 @@
 
             return {
                 getRegisteredModules: getRegisteredModules,
+                loadModule: loadModule,
                 registerAllModulesFromPaths: registerAllModulesFromPaths,
                 registerModule: registerModule
             };
@@ -44,7 +55,8 @@
     var dependencies = [
         'fileLoader',
         'moduleUtils'
-    ]
+    ];
+    
     container.register('registryFactory', registryFactoryBuilder, dependencies);
 
 });
