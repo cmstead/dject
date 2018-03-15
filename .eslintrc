@@ -8,6 +8,7 @@
         "no-console": 1
     },
     "globals": {
+        "__dirname": false,
         "require": false,
         "describe": false,
         "it": false,

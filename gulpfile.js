@@ -18,7 +18,7 @@ const sourceFiles = [
 ];
 
 const testFiles = [
-    'test/**/*.js'
+    'test/**/*.test.js'
 ];
 
 gulp.task('babel', () => {

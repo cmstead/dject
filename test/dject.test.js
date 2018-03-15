@@ -18,7 +18,7 @@ describe('DJect', function () {
 
     beforeEach(function () {
         config = {
-            cwd: './test',
+            cwd: __dirname,
             modulePaths: [
                 'side-load-modules',
                 'testModules'
@@ -32,7 +32,7 @@ describe('DJect', function () {
     });
 
     it('should throw if no config is provided', function () {
-        assert.throws(dject.new, 'DJect requires a configuration object.');
+        assert.throws(dject.new, 'Dject requires a configuration object');
     });
 
     it('should eager load modules when eagerLoad is set in config', function () {
@@ -55,6 +55,7 @@ describe('DJect', function () {
 
         beforeEach(function () {
             container = dject.new(config);
+            console.log(container.getRegisteredModules());
         });
 
         describe('Register Module', function () {
@@ -62,7 +63,7 @@ describe('DJect', function () {
             it('should throw an error if trying to register module when name is already in use', function () {
                 container.register(testBase);
 
-                assert.throws(container.register.bind(null, testBase), 'Injector Error: Cannot reregister module "testBase"');
+                assert.throws(container.register.bind(null, testBase), 'Cannot reregister module testBase');
             });
 
             it('should allow for registering a module', function () {
@@ -121,7 +122,7 @@ describe('DJect', function () {
             
         });
 
-        describe('Register Multiple Modules', function () {
+        describe.skip('Register Multiple Modules', function () {
 
             it('should register an array of modules', function () {
                 container.registerModules([
@@ -135,7 +136,7 @@ describe('DJect', function () {
 
         });
 
-        describe('Get Dependency Tree', function () {
+        describe.skip('Get Dependency Tree', function () {
 
             it('should build a single-layer dependency tree', function () {
                 this.verify(prettyJson(container.getDependencyTree('testBase')));
@@ -147,7 +148,7 @@ describe('DJect', function () {
 
         });
 
-        describe('Build Module', function () {
+        describe.skip('Build Module', function () {
 
             it('should throw an error if module does not exist', function () {
                 assert.throws(container.build.bind(null, 'foo'), 'Injector Error: Module "foo" does not exist');
@@ -186,7 +187,7 @@ describe('DJect', function () {
             });
         });
 
-        describe('New subcontainer', function () {
+        describe.skip('New subcontainer', function () {
 
             it('should preregister all currently loaded modules', function () {
                 container.build('justInTime');
