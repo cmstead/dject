@@ -27,9 +27,19 @@
                 });
             }
 
-            function build(moduleName) {
+            function buildModule(moduleName) {
+                loadModuleIfMissing(moduleName);
                 loadDependencies(moduleName);
                 return coreContainer.build(moduleName);
+            }
+
+            function build(moduleName) {
+                try{
+                    return buildModule(moduleName);
+                } catch (e) {
+                    var message = 'Dependency chain is either circular or too deep to process: ' + e.message;
+                    throw new Error(message);
+                }
             }
 
             return {

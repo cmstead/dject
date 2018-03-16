@@ -55,9 +55,22 @@
                 .filter(function (paramName) { return paramName.length > 0; });
         }
 
+        function getModuleInfo(moduleValue, moduleName) {
+            var dependencies = getModuleDependencies(moduleValue);
+            var name = typeof moduleName === 'string'
+                ? moduleName
+                : getModuleName(moduleValue);
+            
+            return {
+                dependencies: dependencies,
+                name: name
+            };
+        }
+
         return {
             getModuleDependencies: getModuleDependencies,
-            getModuleName: getModuleName
+            getModuleName: getModuleName,
+            getModuleInfo: getModuleInfo
         };
 
     }

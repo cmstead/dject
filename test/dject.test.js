@@ -90,7 +90,7 @@ describe('DJect', function () {
                 assert.throws(register, 'Cannot register module. Expected function, but got object with value');
             });
             
-            it.skip('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
+            it('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: './test',
                     modulePaths: [
@@ -101,13 +101,13 @@ describe('DJect', function () {
 
                 const container = dject.new(testConfig);
 
-                const expectedError = 'Cannot register module myDependency, because it does not exist in the filesystem and errorOnModuleDNE is true.'
+                const expectedError = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true'
                 assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
             });
             
             it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
-                    cwd: './test',
+                    cwd: __dirname,
                     modulePaths: [
                         'testModules'
                     ],
@@ -147,14 +147,15 @@ describe('DJect', function () {
 
         });
 
-        describe.skip('Build Module', function () {
+        describe('Build Module', function () {
 
             it('should throw an error if module does not exist', function () {
-                assert.throws(container.build.bind(null, 'foo'), 'Injector Error: Module "foo" does not exist');
+                assert.throws(container.build.bind(null, 'foo'), 'Module foo has not been registered');
             });
 
             it('should throw an error if Two modules exist in defined file paths', function () {
-                assert.throws(container.build.bind(null, 'duplicate'), 'Injector Error: Found duplicate module "duplicate" in paths side-load-modules, testModules');
+                const message = 'Cannot load module, duplicate; duplicate modules exist in the following paths: ';
+                assert.throws(container.build.bind(null, 'duplicate'), message);
             });
 
             it('should throw an error if dependency chain is too deep or circular', function () {
@@ -163,7 +164,7 @@ describe('DJect', function () {
                 container.loadModule('circular1');
                 container.loadModule('circular2');
 
-                assert.throws(container.build.bind(null, 'circular1'), 'Injector Error: Dependency chain is either circular or too deep to process: Maximum call stack size exceeded');
+                assert.throws(container.build.bind(null, 'circular1'), 'Dependency chain is either circular or too deep to process: Maximum call stack size exceeded');
             });
 
             it('should manage singleton modules correctly', function () {
@@ -172,7 +173,7 @@ describe('DJect', function () {
                 assert.equal(container.build('testSingleton'), firstInstance);
             });
 
-            it('should properly instantiate standalone objects', function () {
+            it.skip('should properly instantiate standalone objects', function () {
                 this.verify(container.build('TestInstantiable').toString());
             });
 
@@ -186,7 +187,7 @@ describe('DJect', function () {
             });
         });
 
-        describe.skip('New subcontainer', function () {
+        describe('New subcontainer', function () {
 
             it('should preregister all currently loaded modules', function () {
                 container.build('justInTime');

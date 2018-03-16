@@ -5,7 +5,8 @@
         "sourceType": "module"
     },
     "rules": {
-        "no-console": 1
+        "no-console": 1,
+        "no-extra-boolean-cast": 0
     },
     "globals": {
         "__dirname": false,

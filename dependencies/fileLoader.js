@@ -27,13 +27,22 @@
             }
         }
 
-        function loadFileFromPaths(cwd, modulePaths, moduleName) {
+        function isFileInPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
             var acceptedPaths = modulePaths
-                .map(function (modulePath) {
-                    return path.join(cwd, modulePath);
-                })
+                .filter(function (modulePath) {
+                    var filepath = path.join(modulePath, fileName);
+                    return statFile(filepath);
+                });
+
+            return acceptedPaths.length > 0;
+        }
+
+        function loadFileFromPaths(modulePaths, moduleName) {
+            var fileName = moduleName + '.js';
+
+            var acceptedPaths = modulePaths
                 .filter(function (modulePath) {
                     var filepath = path.join(modulePath, fileName);
                     return statFile(filepath);
@@ -45,7 +54,9 @@
             }
 
             var filePath = acceptedPaths[0];
-            return loadFileFromPath(filePath)(fileName)
+            return typeof filePath !== 'undefined'
+                ? loadFileFromPath(filePath)(fileName)
+                : null;
         }
 
         function isJSFile(filename) {
@@ -58,14 +69,14 @@
                 .map(loadFileFromPath(modulePath));
         }
 
-        function loadAllFilesFromPaths(cwd, modulePaths) {
-            return modulePaths.reduce(function (moduleOutput, filePath) {
-                var modulePath = path.join(cwd, filePath);
+        function loadAllFilesFromPaths(modulePaths) {
+            return modulePaths.reduce(function (moduleOutput, modulePath) {
                 return moduleOutput.concat(loadAllFilesFromPath(modulePath));
             }, []);
         }
 
         return {
+            isFileInPaths: isFileInPaths,
             loadFileFromPaths: loadFileFromPaths,
             loadAllFilesFromPaths: loadAllFilesFromPaths
         };

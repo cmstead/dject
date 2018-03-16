@@ -9,30 +9,54 @@
 })(function (container) {
     'use strict';
 
-    function registryFactoryBuilder(fileLoader, moduleUtils) {
+    function registryFactoryBuilder(
+        fileLoader,
+        moduleUtils,
+        moduleWrapper
+    ) {
 
-        return function (config, coreContainer) {
+        return function (modulePaths, coreContainer) {
 
-            function registerModule(moduleInstance, moduleName) {
-                var dependencies = moduleUtils.getModuleDependencies(moduleInstance);
-                var name = typeof moduleName === 'string'
-                    ? moduleName
-                    : moduleUtils.getModuleName(moduleInstance);
+            // function addToRegistry(method, moduleValue, moduleName) {
 
-                coreContainer.register(name, moduleInstance, dependencies);
+            // }
+
+            function registerModule(moduleValue, moduleName) {
+                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                var dependencies = moduleInfo.dependencies;
+                var name = moduleInfo.name;
+
+                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+
+                coreContainer.register(name, wrappedModule, dependencies);
+            }
+
+            function override (moduleValue, moduleName) {
+                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                var dependencies = moduleInfo.dependencies;
+                var name = moduleInfo.name;
+
+                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+
+                coreContainer.override(name, wrappedModule, dependencies);
+            }
+
+
+            function registerModules(moduleValues) {
+                moduleValues.forEach(registerModule);
             }
 
             function loadModule(moduleName) {
-                var cwd = config.cwd;
-                var modulePaths = config.modulePaths
-                var moduleInstance = fileLoader.loadFileFromPaths(cwd, modulePaths, moduleName);
+                var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
 
-                registerModule(moduleInstance);
+                if(moduleInstance !== null) {
+                    registerModule(moduleInstance);
+                }
             }
 
-            function registerAllModulesFromPaths(cwd, modulePaths) {
+            function registerAllModulesFromPaths(modulePaths) {
                 fileLoader
-                    .loadAllFilesFromPaths(cwd, modulePaths)
+                    .loadAllFilesFromPaths(modulePaths)
                     .forEach(registerModule);
             }
 
@@ -45,8 +69,10 @@
             return {
                 getRegisteredModules: getRegisteredModules,
                 loadModule: loadModule,
+                override: override,
                 registerAllModulesFromPaths: registerAllModulesFromPaths,
-                registerModule: registerModule
+                registerModule: registerModule,
+                registerModules: registerModules
             };
         }
 
@@ -54,7 +80,8 @@
 
     var dependencies = [
         'fileLoader',
-        'moduleUtils'
+        'moduleUtils',
+        'moduleWrapper'
     ];
     
     container.register('registryFactory', registryFactoryBuilder, dependencies);
