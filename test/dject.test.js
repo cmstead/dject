@@ -135,7 +135,7 @@ describe('DJect', function () {
 
         });
 
-        describe.skip('Get Dependency Tree', function () {
+        describe('Get Dependency Tree', function () {
 
             it('should build a single-layer dependency tree', function () {
                 this.verify(prettyJson(container.getDependencyTree('testBase')));
@@ -173,7 +173,7 @@ describe('DJect', function () {
                 assert.equal(container.build('testSingleton'), firstInstance);
             });
 
-            it.skip('should properly instantiate standalone objects', function () {
+            it('should properly instantiate standalone objects', function () {
                 this.verify(container.build('TestInstantiable').toString());
             });
 

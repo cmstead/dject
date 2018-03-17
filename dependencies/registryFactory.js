@@ -17,10 +17,6 @@
 
         return function (modulePaths, coreContainer) {
 
-            // function addToRegistry(method, moduleValue, moduleName) {
-
-            // }
-
             function registerModule(moduleValue, moduleName) {
                 var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
                 var dependencies = moduleInfo.dependencies;
@@ -31,7 +27,7 @@
                 coreContainer.register(name, wrappedModule, dependencies);
             }
 
-            function override (moduleValue, moduleName) {
+            function override(moduleValue, moduleName) {
                 var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
                 var dependencies = moduleInfo.dependencies;
                 var name = moduleInfo.name;
@@ -47,10 +43,12 @@
             }
 
             function loadModule(moduleName) {
-                var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+                if (!coreContainer.isRegistered(moduleName)) {
+                    var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
 
-                if(moduleInstance !== null) {
-                    registerModule(moduleInstance);
+                    if (moduleInstance !== null) {
+                        registerModule(moduleInstance);
+                    }
                 }
             }
 
@@ -67,6 +65,7 @@
             }
 
             return {
+                getModuleBuilder: coreContainer.getModuleBuilder,
                 getRegisteredModules: getRegisteredModules,
                 loadModule: loadModule,
                 override: override,
@@ -83,7 +82,7 @@
         'moduleUtils',
         'moduleWrapper'
     ];
-    
+
     container.register('registryFactory', registryFactoryBuilder, dependencies);
 
 });

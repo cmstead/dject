@@ -19,22 +19,41 @@
                 return moduleValue.apply(null, dependencies);
             }
 
-            function singletonFactory () {
+            function singletonFactory() {
                 generatedModule = generatedModule === null
                     ? buildModule(arguments)
                     : generatedModule;
-                
+
                 return generatedModule;
             }
 
             singletonFactory['@singleton'] = true;
+            singletonFactory['@dependencies'] = moduleValue['@dependencies'];
 
             return singletonFactory;
         }
 
+        function wrapInstantiable(moduleValue) {
+            function instantiableFactory() {
+                var dependencies = Array.prototype.slice.call(arguments, 0);
+                var instance = Object.create(moduleValue.prototype);
+
+                moduleValue.apply(instance, dependencies);
+
+                return instance;
+            }
+
+            instantiableFactory['@instantiable'] = true;
+            instantiableFactory['@dependencies'] = moduleValue['@dependencies'];
+
+            return instantiableFactory;
+        }
+
         function wrapSpecialModule(moduleValue) {
-            if(moduleValue['@singleton']) {
+            if (moduleValue['@singleton']) {
                 return wrapSingleton(moduleValue);
+            } else if (moduleValue['@instantiable']) {
+                return wrapInstantiable(moduleValue);
             } else {
                 return moduleValue;
             }
