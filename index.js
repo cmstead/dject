@@ -1,5 +1,19 @@
-'use strict';
+(function () {
+    'use strict';
 
-const coreContainer = require('./coreContainer');
+    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+    var coreContainer = isNode ? require('./coreContainer') : window.djectCoreFactory();
 
-module.exports = coreContainer.build('dject');
+    if (isNode) {
+        module.exports = coreContainer.build('dject');
+    } else {
+        Object
+            .keys(window.djectLoaders)
+            .foreach(function(loaderKey) {
+                window.djectLoaders[loaderKey](coreContainer);
+            });
+
+        window.djectLoaders = undefined;
+        window.dject = coreContainer.build('dject');
+    }
+})();

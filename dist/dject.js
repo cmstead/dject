@@ -1,509 +1,741 @@
-(function() {
-		'use strict';
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	(function (buildConfig) {
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	    if (isNode) {
-	        module.exports = buildConfig();
-	    } else {
-	        window.buildDjectConfig = buildConfig();
-	    }
-	})(function () {
-	    'use strict';
-	
-	    return function buildConfig(config) {
-	        config = config !== null && (typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object' ? config : {};
-	
-	        config.cwd = typeof config.cwd === 'string' ? config.cwd : '.';
-	        config.modulePaths = Object.prototype.toString.call(config.modulePaths) === '[object Array]' ? config.modulePaths : ['modules'];
-	        config.allowOverride = typeof config.allowOverride === 'boolean' ? config.allowOverride : false;
-	        config.eagerLoad = typeof config.eagerLoad === 'boolean' ? config.eagerLoad : false;
-	        config.errorOnModuleDNE = typeof config.errorOnModuleDNE === 'boolean' ? config.errorOnModuleDNE : false;
-	
-	        return config;
-	    };
-	});
-	'use strict';
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	(function (functionHelperFactory) {
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	
-	    if (isNode) {
-	        module.exports = functionHelperFactory();
-	    } else {
-	        window.djectFunctionHelper = functionHelperFactory();
-	    }
-	})(function () {
-	    'use strict';
-	
-	    function getFunctionName(fn) {
-	        return fn.name === '' ? 'anonymous' : fn.name;
-	    }
-	
-	    function getArgStr(fn) {
-	        try {
-	            return fn.toString().match(/function\s.*?\(([^)]*)\)/)[1];
-	        } catch (e) {
-	            var message = typeof fn === 'function' ? 'Unable to parse arguments from function or expression: ' + getFunctionName(fn) : 'Cannot register module. Expected function, but got ' + (typeof fn === 'undefined' ? 'undefined' : _typeof(fn)) + ' with value ' + JSON.stringify(fn, null, 4);
-	
-	            throw new Error(message);
-	        }
-	    }
-	
-	    function getParamNames(fn) {
-	        return getArgStr(fn).replace(/\/\*.*\*\//, '').split(',').map(function (paramName) {
-	            return paramName.trim();
-	        }).filter(function (paramName) {
-	            return paramName.length > 0;
-	        });
-	    }
-	
-	    return {
-	        getParamNames: getParamNames
-	    };
-	});
-	'use strict';
-	
-	(function (injectorErrorFactory) {
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	
-	    if (isNode) {
-	        module.exports = injectorErrorFactory();
-	    } else {
-	        window.djectInjectorError = injectorErrorFactory();
-	    }
-	})(function () {
-	    'use strict';
-	
-	    function InjectorError(message) {
-	        var localError = Error.apply(this, arguments);
-	
-	        this.name = 'Injector Error';
-	        this.messageBody = message;
-	
-	        Object.defineProperty(this, 'message', {
-	            get: function get() {
-	                this.name + ': ' + this.messageBody;
-	            }
-	        });
-	
-	        Object.defineProperty(this, 'stack', {
-	            get: function get() {
-	                return localError.stack;
-	            }
-	        });
-	
-	        return this;
-	    }
-	
-	    InjectorError.prototype = Object.create(Error.prototype);
-	
-	    InjectorError.prototype.toString = function () {
-	        return this.name + ': ' + this.messageBody;
-	    };
-	
-	    return InjectorError;
-	});
-	'use strict';
-	
-	/* global djectFunctionHelper */
-	
-	(function (setDefaultsFactory) {
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	
-	    if (isNode) {
-	        var functionHelper = require('./functionHelper');
-	
-	        module.exports = setDefaultsFactory(functionHelper);
-	    } else {
-	        window.setDjectDefaults = setDefaultsFactory(djectFunctionHelper);
-	    }
-	})(function (functionHelper) {
-	    'use strict';
-	
-	    function checkPropOn(module) {
-	        return function (propName) {
-	            return typeof module[propName] !== 'undefined';
-	        };
-	    }
-	
-	    function getPropOrDefaultOn(module) {
-	        var hasProp = checkPropOn(module);
-	
-	        return function (propName, defaultProp) {
-	            return hasProp(propName) ? module[propName] : defaultProp;
-	        };
-	    }
-	
-	    function setDefaults(module) {
-	        var getPropOrDefault = getPropOrDefaultOn(module);
-	
-	        module['@name'] = getPropOrDefault('@name', module.name);
-	        module['@instantiable'] = getPropOrDefault('@instantiable', false);
-	        module['@singleton'] = getPropOrDefault('@singleton', false);
-	        module['@dependencies'] = getPropOrDefault('@dependencies', functionHelper.getParamNames(module));
-	
-	        return module;
-	    }
-	
-	    return setDefaults;
-	});
-	'use strict';
-	
-	(function (wrapOnInstantiableFactory) {
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	
-	    if (isNode) {
-	        module.exports = wrapOnInstantiableFactory();
-	    } else {
-	        window.djectWrapOnInstantiable = wrapOnInstantiableFactory();
-	    }
-	})(function () {
-	    'use strict';
-	
-	    function isMetadataKey(key) {
-	        return key.match(/^\@.*$/) !== null;
-	    }
-	
-	    function applyMetadata(InstantiableObj, InstantiableFactory) {
-	        Object.keys(InstantiableObj).filter(isMetadataKey).forEach(function (key) {
-	            InstantiableFactory[key] = InstantiableObj[key];
-	        });
-	
-	        return InstantiableFactory;
-	    }
-	
-	    function wrapInstantiable(InstantiableObj) {
-	        function InstantiableFactory() {
-	            var dependencies = Array.prototype.slice.call(arguments, 0);
-	            var newObj = Object.create(InstantiableObj.prototype);
-	
-	            InstantiableObj.apply(newObj, dependencies);
-	
-	            return newObj;
-	        }
-	
-	        return applyMetadata(InstantiableObj, InstantiableFactory);
-	    }
-	
-	    function wrapOnInstantiable(module) {
-	        return module['@instantiable'] ? wrapInstantiable(module) : module;
-	    }
-	
-	    return wrapOnInstantiable;
-	});
-	'use strict';
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	/* global
-	    djectInjectorError,
-	    setDjectDefaults,
-	    djectWrapOnInstantiable,
-	    buildDjectConfig */
-	
-	(function (djectBuilder) {
-	
-	    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	
-	    var fsFake = {
-	        lstatSync: function lstatSync() {
-	            throw new Error('Module not loaded, cannot stat files in the browser.');
-	        }
-	    };
-	
-	    function loadRemoteModulesFake() {
-	        throw new Error('Module not loaded, cannot load filesystem modules in the browser.');
-	    }
-	
-	    if (isNode) {
-	        var fs = require('fs');
-	        var InjectorError = require('./bin/injectorError');
-	        var setDefaults = require('./bin/setDefaults');
-	        var wrapOnInstantiable = require('./bin/wrapOnInstantiable');
-	        var buildConfig = require('./bin/buildConfig');
-	        var loadRemoteModules = require('./bin/loadRemoteModules');
-	
-	        module.exports = djectBuilder(fs, InjectorError, setDefaults, wrapOnInstantiable, buildConfig, loadRemoteModules);
-	    } else {
-	        window.djectFunctionHelper = djectBuilder(fsFake, djectInjectorError, setDjectDefaults, djectWrapOnInstantiable, buildDjectConfig, loadRemoteModulesFake);
-	    }
-	})(function (fs, InjectorError, setDefaults, wrapOnInstantiable, buildConfig, loadRemoteModules) {
-	
-	    'use strict';
-	
-	    function djectFactory(config) {
-	        var registeredModules = {};
-	        var registeredSingletons = {};
-	
-	        config = buildConfig(config);
-	
-	        function getModuleName(module) {
-	            return typeof module['@name'] !== 'undefined' ? module['@name'] : module.name;
-	        }
-	
-	        function registerModules(moduleArray) {
-	            moduleArray.forEach(register);
-	        }
-	
-	        function throwOnModuleDoesNotExist(moduleName) {
-	            var moduleDoesNotExist = config.errorOnModuleDNE && getValidPaths(moduleName).length === 0;
-	
-	            if (moduleDoesNotExist) {
-	                var errorMessage = 'Cannot register module ' + moduleName + ', because it does not exist in the filesystem and errorOnModuleDNE is true.';
-	                throw new Error(errorMessage);
-	            }
-	        }
-	
-	        function throwOnReregister(InjectorError, moduleName) {
-	            if (typeof registeredModules[moduleName] !== 'undefined') {
-	                var errorMessage = 'Cannot reregister module "' + moduleName + '"';
-	                throw new InjectorError(errorMessage);
-	            }
-	        }
-	
-	        function getModuleNameOrOption(optionalName, module) {
-	            return typeof optionalName === 'string' ? optionalName : getModuleName(module);
-	        }
-	
-	        function register(module, optionalName) {
-	            var moduleName = getModuleNameOrOption(optionalName, module);
-	
-	            throwOnModuleDoesNotExist(moduleName);
-	            throwOnReregister(InjectorError, moduleName);
-	
-	            module['@name'] = moduleName;
-	
-	            registerModule(module);
-	        }
-	
-	        function registerModule(module) {
-	            var cleanModule = setDefaults(module);
-	
-	            registeredModules[cleanModule['@name']] = wrapOnInstantiable(cleanModule);
-	        }
-	
-	        function registerSingleton(moduleDef, moduleInstance) {
-	            registeredSingletons[moduleDef['@name']] = moduleInstance;
-	
-	            return moduleInstance;
-	        }
-	
-	        function throwOnUnregistered(moduleName) {
-	            if (typeof registeredModules[moduleName] === 'undefined') {
-	                throw new InjectorError('Cannot override unregistered module "' + moduleName + '"');
-	            }
-	        }
-	
-	        function overrideModule(module, optionalName) {
-	            if (!config.allowOverride) {
-	                throw new InjectorError('Set "allowOverride: true" in your config to allow module registration override');
-	            }
-	
-	            var moduleName = getModuleNameOrOption(optionalName, module);
-	
-	            throwOnUnregistered(moduleName);
-	
-	            module['@name'] = moduleName;
-	
-	            registerModule(module);
-	        }
-	
-	        function overrideModules(moduleArray) {
-	            moduleArray.forEach(overrideModule);
-	        }
-	
-	        function getRegisteredModules() {
-	            return Object.keys(registeredModules);
-	        }
-	
-	        function build(moduleName) {
-	            var moduleDef = getModuleOrThrow(moduleName);
-	
-	            return moduleDef['@singleton'] ? getSingleton(moduleDef) : buildNew(moduleDef);
-	        }
-	
-	        function throwOnInjectorOrCallStackError(error) {
-	            var message = 'Dependency chain is either circular or too deep to process:';
-	            var errorMessage = typeof error.message === 'string' ? error.message : '';
-	            var callstackError = errorMessage.match(/call stack/) !== null;
-	            var injectorError = errorMessage.match(/Injector Error\:/) !== null;
-	
-	            if (!callstackError || injectorError) {
-	                throw error;
-	            } else {
-	                throw new InjectorError(message + ' ' + error.message);
-	            }
-	        }
-	
-	        function buildDependenciesOrThrow(moduleDef) {
-	            try {
-	                return moduleDef['@dependencies'].map(build);
-	            } catch (error) {
-	                throwOnInjectorOrCallStackError(error);
-	            }
-	        }
-	
-	        function buildNew(moduleDef) {
-	            var dependencies = buildDependenciesOrThrow(moduleDef);
-	            return moduleDef.apply(null, dependencies);
-	        }
-	
-	        function getSingleton(moduleDef) {
-	            var registeredSingleton = registeredSingletons[moduleDef['@name']];
-	            var singletonExists = typeof registeredSingleton !== 'undefined';
-	
-	            return singletonExists ? registeredSingleton : registerSingleton(moduleDef, buildNew(moduleDef));
-	        }
-	
-	        function throwOnNoModule(moduleDef, moduleName) {
-	            if (typeof moduleDef === 'undefined') {
-	                throw new InjectorError('Module "' + moduleName + '" does not exist');
-	            }
-	
-	            return moduleDef;
-	        }
-	
-	        function getModuleOrThrow(moduleName) {
-	            var moduleDef = registeredModules[moduleName];
-	
-	            if (typeof moduleDef === 'undefined') {
-	                moduleDef = loadFileSystemModule(moduleName);
-	            }
-	
-	            return throwOnNoModule(moduleDef, moduleName);
-	        }
-	
-	        function statModule(moduleName, cwd) {
-	            return function (path) {
-	                var filePath = [cwd, path, moduleName].join('/');
-	                var result = false;
-	
-	                try {
-	                    fs.lstatSync(filePath);
-	                    result = true;
-	                } catch (e) {/* noop */}
-	
-	                return result;
-	            };
-	        }
-	
-	        function getValidPaths(moduleName) {
-	            var fileName = [moduleName, 'js'].join('.');
-	            return config.modulePaths.filter(statModule(fileName, config.cwd));
-	        }
-	
-	        function tryLoadModule(filePath) {
-	            var module;
-	            var loadCount = 0;
-	
-	            // Sometimes the module is loaded as undefined.
-	            while (typeof module === 'undefined' && ++loadCount <= 10) {
-	                module = require(filePath);
-	            }
-	
-	            return module;
-	        }
-	
-	        function registerFilesystemModule(validPaths, moduleName) {
-	            var filePath = [config.cwd, validPaths[0], moduleName].join('/');
-	            var module = tryLoadModule(filePath);
-	
-	            register(module);
-	        }
-	
-	        function registerFilesystemModuleOrThrow(validPaths, moduleName) {
-	            if (validPaths.length === 1) {
-	                registerFilesystemModule(validPaths, moduleName);
-	            } else if (validPaths.length > 1) {
-	                throw new InjectorError('Found duplicate module "' + moduleName + '" in paths ' + validPaths.join(', '));
-	            }
-	        }
-	
-	        function loadFileSystemModule(moduleName) {
-	            var validPaths = getValidPaths(moduleName);
-	
-	            registerFilesystemModuleOrThrow(validPaths, moduleName);
-	            return registeredModules[moduleName];
-	        }
-	
-	        function loadSubtree(dependencies, submoduleName) {
-	            return dependencies.concat([getDependencyTree(submoduleName)]);
-	        }
-	
-	        function getDependencyTree(moduleName) {
-	            var module = getModuleOrThrow(moduleName);
-	
-	            return {
-	                name: moduleName,
-	                instantiable: module['@instantiable'],
-	                singleton: module['@singleton'],
-	                dependencies: module['@dependencies'].reduce(loadSubtree, [])
-	            };
-	        }
-	
-	        function loadModule(moduleName) {
-	            if (typeof registeredModules[moduleName] === 'undefined') {
-	                var module = getModuleOrThrow(moduleName);
-	                registeredModules[moduleName] = module;
-	            }
-	        }
-	
-	        function buildSubcontainerConfig() {
-	            var newConfig = Object.create(config);
-	            newConfig.allowOverride = true;
-	
-	            return newConfig;
-	        }
-	
-	        function newSubcontainer() {
-	            var subcontainer = buildNewContainer(buildSubcontainerConfig());
-	
-	            if (!config.eagerLoad) {
-	                Object.keys(registeredModules).forEach(function (moduleName) {
-	                    var moduleValue = registeredModules[moduleName];
-	                    subcontainer.register(moduleValue);
-	                });
-	            }
-	
-	            return subcontainer;
-	        }
-	
-	        return {
-	            build: build,
-	            getDependencyTree: getDependencyTree,
-	            getRegisteredModules: getRegisteredModules,
-	            loadModule: loadModule,
-	            new: newSubcontainer,
-	
-	            override: overrideModule,
-	            overrideModules: overrideModules,
-	
-	            register: register,
-	            registerModules: registerModules
-	        };
-	    }
-	
-	    function buildNewContainer(config) {
-	        if ((typeof config === 'undefined' ? 'undefined' : _typeof(config)) !== 'object') {
-	            throw new Error('DJect requires a configuration object.');
-	        }
-	
-	        var container = djectFactory(config);
-	
-	        if (config.eagerLoad === true) {
-	            config.modulePaths.forEach(loadRemoteModules(config.cwd, container));
-	        }
-	
-	        return container;
-	    }
-	
-	    return {
-	        new: buildNewContainer
-	    };
-	});
+(function (djectCoreFactory) {
+    'use strict';
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = djectCoreFactory;
+    } else {
+        window.djectCoreFactory = djectCoreFactory;
+    }
+
+})(function () {
+
+    var registry = {};
+    var api = {};
+
+
+    function isRegistered(moduleName) {
+        return typeof registry[moduleName] !== 'undefined';
+    }
+
+    function throwOnUnregistered(moduleName) {
+        if (!isRegistered(moduleName)) {
+            throw new Error('Module ' + moduleName + ' has not been registered');
+        }
+    }
+
+    function throwOnImproperOverride(moduleName) {
+        if (!isRegistered(moduleName)) {
+            throw new Error('Cannot override module, ' + moduleName + '; it has not been registered');
+        }
+    }
+
+    function build(moduleName) {
+        throwOnUnregistered(moduleName);
+        return registry[moduleName]();
+    }
+
+    function set(obj, key, value) {
+        obj[key] = value;
+        return obj
+    }
+
+    function createBuilder(moduleFactory, dependencies) {
+        function moduleBuilder() {
+            return moduleFactory.apply(null, dependencies.map(build));
+        }
+
+        function getDependencies() {
+            return dependencies.slice(0);
+        }
+
+        return set(moduleBuilder, 'dependencies', getDependencies);
+    }
+
+    function throwOnRegistered(moduleName) {
+        if (isRegistered(moduleName)) {
+            throw new Error('Cannot reregister module ' + moduleName);
+        }
+    }
+
+    function registerModule(moduleName, moduleFactory, dependencies) {
+        registry[moduleName] = createBuilder(moduleFactory, dependencies);
+        return api;
+    }
+
+    function register(moduleName, moduleFactory, dependencies) {
+        throwOnRegistered(moduleName);
+        return registerModule(moduleName, moduleFactory, dependencies);
+    }
+
+    function override(moduleName, moduleFactory, dependencies) {
+        throwOnImproperOverride(moduleName);
+        return registerModule(moduleName, moduleFactory, dependencies);
+    }
+
+    function attachRegistryKey(outputRegistry, key) {
+        return set(outputRegistry, key, registry[key]);
+    }
+
+    function getModuleRegistry() {
+        return Object.keys(registry).reduce(attachRegistryKey, {});
+    }
+
+    function getDependencies(moduleName) {
+        throwOnUnregistered(moduleName);
+
+        return registry[moduleName].dependencies();
+    }
+
+    function getModuleBuilder(moduleName) {
+        return registry[moduleName];
+    }
+
+    api.build = build;
+    api.getModuleBuilder = getModuleBuilder;
+    api.getModuleRegistry = getModuleRegistry;
+    api.isRegistered = isRegistered;
+    api.getDependencies = getDependencies;
+    api.override = override;
+    api.register = register;
+
+    return api;
+
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.baseUtilsLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function throwOnBadConfig(config) {
+        if (typeof config === 'undefined') {
+            throw new Error('Dject requires a configuration object');
+        }
+    }
+
+    function performEagerLoad(eagerLoad, modulePaths, registry) {
+        if (eagerLoad) {
+            registry.registerAllModulesFromPaths(modulePaths);
+        }
+    }
+
+    function valueOrDefault(value, defaultValue) {
+        return Boolean(value) ? value : defaultValue;
+    }
+
+    function buildLocalConfig(config) {
+        var localConfig = Object.create(config);
+
+        localConfig.allowOverride = valueOrDefault(config.allowOverride, false);
+        localConfig.eagerLoad = valueOrDefault(config.eagerLoad, false);
+        localConfig.errorOnModuleDNE = valueOrDefault(config.errorOnModuleDNE, false);
+
+        return localConfig;
+    }
+
+    function baseUtilsFactory(path) {
+        function buildModulePaths(config) {
+            return config.modulePaths.map(function (modulePath) {
+                return path.join(config.cwd, modulePath);
+            })
+        }
+
+        return {
+            buildLocalConfig: buildLocalConfig,
+            buildModulePaths: buildModulePaths,
+            throwOnBadConfig: throwOnBadConfig,
+            performEagerLoad: performEagerLoad
+        };
+    }
+
+    container.register('baseUtils', baseUtilsFactory, ['path']);
+});
+(function (loader) {
+
+    if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.containerFactoryLoader = loader;
+    }
+
+})(function(container) {
+    'use strict';
+    
+    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+    var djectCoreFactory = isNode ? require('dject-core') : window.djectCoreFactory;
+
+    function containerFactory() {
+        return djectCoreFactory;
+    }
+
+    container.register('containerFactory', containerFactory, []);
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.djectLoader = loader;
+    }
+
+})(function djectLoader(container) {
+    'use strict';
+
+    function djectFactory(
+        baseUtils,
+        containerFactory,
+        fileLoader,
+        moduleBuilderFactory,
+        moduleUtils,
+        registryFactory
+    ) {
+
+        function newContainer(config) {
+            baseUtils.throwOnBadConfig(config);
+
+            var localConfig = baseUtils.buildLocalConfig(config);
+            var modulePaths = baseUtils.buildModulePaths(localConfig);
+
+            var coreContainer = containerFactory();
+            var registry = registryFactory(modulePaths, coreContainer);
+            var moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+
+            baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
+
+            function override(moduleValue, moduleName) {
+                if (localConfig.allowOverride) {
+                    registry.override(moduleValue, moduleName);
+                } else {
+                    var message = 'Cannot override module, allowOverride is set to false.';
+                    throw new Error(message);
+                }
+            }
+
+            function checkModuleDNE(moduleName) {
+                return localConfig.errorOnModuleDNE
+                    && !fileLoader.isFileInPaths(modulePaths, moduleName);
+            }
+
+            function register(moduleValue, moduleName) {
+                var localName = typeof moduleName === 'string'
+                    ? moduleName
+                    : moduleUtils.getModuleName(moduleValue);
+
+                if (checkModuleDNE(localName)) {
+                    var message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
+                    throw new Error(message);
+                } else {
+                    registry.registerModule(moduleValue, moduleName);
+                }
+            }
+
+            function buildChildConfig(config) {
+                var childConfig = Object.create(config);
+                childConfig.allowOverride = true;
+
+                return childConfig;
+            }
+
+            function buildNew() {
+                var childConfig = buildChildConfig(localConfig);
+                var childContainer = newContainer(childConfig);
+                var registeredModules = coreContainer.getModuleRegistry();
+
+                Object
+                    .keys(registeredModules)
+                    .forEach(function (moduleKey) {
+                        var moduleValue = registeredModules[moduleKey];
+                        childContainer.register(moduleValue, moduleKey);
+                    });
+
+                return childContainer;
+            }
+
+            function getDependencyTree(moduleName) {
+                registry.loadModule(moduleName);
+
+                var moduleBuilder = registry.getModuleBuilder(moduleName);
+                var dependencies = moduleBuilder.dependencies();
+
+                return {
+                    name: moduleName,
+                    instantiable: Boolean(moduleBuilder['@instantiable']),
+                    singleton: Boolean(moduleBuilder['@singleton']),
+                    dependencies: dependencies.map(getDependencyTree)
+                };
+            }
+
+            return {
+                build: moduleBuilder.build,
+                getRegisteredModules: registry.getRegisteredModules,
+                getDependencyTree: getDependencyTree,
+                loadModule: registry.loadModule,
+                new: buildNew,
+                override: override,
+                register: register,
+                registerModules: registry.registerModules
+            };
+        }
+
+        return {
+            new: newContainer
+        };
+    }
+
+    container.register('dject', djectFactory, [
+        'baseUtils',
+        'containerFactory',
+        'fileLoader',
+        'moduleBuilderFactory',
+        'moduleUtils',
+        'registryFactory'
+    ]);
+});
+
+
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.fileLoaderLoader = loader;
+    }
+
+})(function (container) {
+
+    function fileLoaderFactory(fs, path) {
+
+        var jsPattern = /^.+\.js$/;
+
+        function statFile(filepath) {
+            try {
+                return fs.lstatSync(filepath).isFile();
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function loadFileFromPath(filePath) {
+            return function (filename) {
+                var fullPath = path.join(filePath, filename);
+                return require(fullPath);
+            }
+        }
+
+        function isFileInPaths(modulePaths, moduleName) {
+            var fileName = moduleName + '.js';
+
+            var acceptedPaths = modulePaths
+                .filter(function (modulePath) {
+                    var filepath = path.join(modulePath, fileName);
+                    return statFile(filepath);
+                });
+
+            return acceptedPaths.length > 0;
+        }
+
+        function loadFileFromPaths(modulePaths, moduleName) {
+            var fileName = moduleName + '.js';
+
+            var acceptedPaths = modulePaths
+                .filter(function (modulePath) {
+                    var filepath = path.join(modulePath, fileName);
+                    return statFile(filepath);
+                });
+
+            if (acceptedPaths.length > 1) {
+                var message = 'Cannot load module, ' + moduleName + '; duplicate modules exist in the following paths: ' + acceptedPaths.join(',');
+                throw new Error(message);
+            }
+
+            var filePath = acceptedPaths[0];
+            return typeof filePath !== 'undefined'
+                ? loadFileFromPath(filePath)(fileName)
+                : null;
+        }
+
+        function isJSFile(filename) {
+            return filename.match(jsPattern) !== null;
+        }
+
+        function loadAllFilesFromPath(modulePath) {
+            return fs.readdirSync(modulePath)
+                .filter(isJSFile)
+                .map(loadFileFromPath(modulePath));
+        }
+
+        function loadAllFilesFromPaths(modulePaths) {
+            return modulePaths.reduce(function (moduleOutput, modulePath) {
+                return moduleOutput.concat(loadAllFilesFromPath(modulePath));
+            }, []);
+        }
+
+        return {
+            isFileInPaths: isFileInPaths,
+            loadFileFromPaths: loadFileFromPaths,
+            loadAllFilesFromPaths: loadAllFilesFromPaths
+        };
+    }
+
+    container.register('fileLoader', fileLoaderFactory, ['fs', 'path']);
+
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.moduleBuilderFactoryLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function moduleBuilderFactoryBuilder() {
+        return function (coreContainer, registry) {
+
+            function loadModuleIfMissing(moduleName) {
+                if(!coreContainer.isRegistered(moduleName)){
+                    registry.loadModule(moduleName);
+                }
+            }
+
+            function loadDependencies(moduleName) {
+                var dependencies = coreContainer.getDependencies(moduleName);
+
+                dependencies.forEach(function (moduleName) {
+                    loadModuleIfMissing(moduleName);
+                    loadDependencies(moduleName);
+                });
+            }
+
+            function buildModule(moduleName) {
+                loadModuleIfMissing(moduleName);
+                loadDependencies(moduleName);
+                return coreContainer.build(moduleName);
+            }
+
+            function build(moduleName) {
+                try{
+                    return buildModule(moduleName);
+                } catch (e) {
+                    var message = 'Dependency chain is either circular or too deep to process: ' + e.message;
+                    throw new Error(message);
+                }
+            }
+
+            return {
+                build: build
+            };
+        }
+    }
+
+    container.register('moduleBuilderFactory', moduleBuilderFactoryBuilder, []);
+
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.moduleUtilsLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function moduleUtilsFactory() {
+
+        function getModuleName(moduleInstance) {
+            var predefinedName = moduleInstance['@name'];
+            return typeof predefinedName === 'string' ? predefinedName : moduleInstance.name;
+        }
+
+        function getFunctionArgs(fn) {
+            var functionSource = fn.toString();
+            var baseFunctionMatch = functionSource.match(/function\s.*?\(([^)]*)\)/);
+
+            if (baseFunctionMatch !== null) {
+                return baseFunctionMatch[1];
+            } else {
+                return functionSource.match(/.*\(([^)]*)\)\s*\=\>/)[1];
+            }
+        }
+
+        function getArgStr(fn) {
+            try {
+                return getFunctionArgs(fn);
+            } catch (e) {
+                var message = 'Unable to parse arguments from function or expression: ' + getModuleName(fn);
+                throw new Error(message);
+            }
+        }
+
+        function throwOnBadFunction(fn) {
+            var message = 'Cannot register module. Expected function, but got ' + typeof fn +
+            ' with value ' + JSON.stringify(fn, null, 4);
+
+            if(typeof fn !== 'function'){
+                throw new Error(message);
+            }
+        }
+
+        function getModuleDependencies(fn) {
+            throwOnBadFunction(fn);
+
+            return getArgStr(fn)
+                .replace(/\/\*.*\*\//, '')
+                .split(',')
+                .map(function (paramName) { return paramName.trim(); })
+                .filter(function (paramName) { return paramName.length > 0; });
+        }
+
+        function getModuleInfo(moduleValue, moduleName) {
+            var dependencies = getModuleDependencies(moduleValue);
+            var name = typeof moduleName === 'string'
+                ? moduleName
+                : getModuleName(moduleValue);
+            
+            return {
+                dependencies: dependencies,
+                name: name
+            };
+        }
+
+        return {
+            getModuleDependencies: getModuleDependencies,
+            getModuleName: getModuleName,
+            getModuleInfo: getModuleInfo
+        };
+
+    }
+
+    container.register('moduleUtils', moduleUtilsFactory, []);
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.moduleWrapperLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function moduleWrapperFactory() {
+
+        function wrapSingleton(moduleValue) {
+            var generatedModule = null;
+
+            function buildModule(args) {
+                var dependencies = Array.prototype.slice.call(args, 0);
+                return moduleValue.apply(null, dependencies);
+            }
+
+            function singletonFactory() {
+                generatedModule = generatedModule === null
+                    ? buildModule(arguments)
+                    : generatedModule;
+
+                return generatedModule;
+            }
+
+            singletonFactory['@singleton'] = true;
+            singletonFactory['@dependencies'] = moduleValue['@dependencies'];
+
+            return singletonFactory;
+        }
+
+        function wrapInstantiable(moduleValue) {
+            function instantiableFactory() {
+                var dependencies = Array.prototype.slice.call(arguments, 0);
+                var instance = Object.create(moduleValue.prototype);
+
+                moduleValue.apply(instance, dependencies);
+
+                return instance;
+            }
+
+            instantiableFactory['@instantiable'] = true;
+            instantiableFactory['@dependencies'] = moduleValue['@dependencies'];
+
+            return instantiableFactory;
+        }
+
+        function wrapSpecialModule(moduleValue) {
+            if (moduleValue['@singleton']) {
+                return wrapSingleton(moduleValue);
+            } else if (moduleValue['@instantiable']) {
+                return wrapInstantiable(moduleValue);
+            } else {
+                return moduleValue;
+            }
+        }
+
+        return {
+            wrapSpecialModule: wrapSpecialModule
+        };
+
+    }
+
+    container.register('moduleWrapper', moduleWrapperFactory, []);
+
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.registryLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function registryFactoryBuilder(
+        fileLoader,
+        moduleUtils,
+        moduleWrapper
+    ) {
+
+        return function (modulePaths, coreContainer) {
+
+            function registerModule(moduleValue, moduleName) {
+                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                var dependencies = moduleInfo.dependencies;
+                var name = moduleInfo.name;
+
+                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+
+                coreContainer.register(name, wrappedModule, dependencies);
+            }
+
+            function override(moduleValue, moduleName) {
+                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                var dependencies = moduleInfo.dependencies;
+                var name = moduleInfo.name;
+
+                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+
+                coreContainer.override(name, wrappedModule, dependencies);
+            }
+
+
+            function registerModules(moduleValues) {
+                moduleValues.forEach(registerModule);
+            }
+
+            function loadModule(moduleName) {
+                if (!coreContainer.isRegistered(moduleName)) {
+                    var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+
+                    if (moduleInstance !== null) {
+                        registerModule(moduleInstance);
+                    }
+                }
+            }
+
+            function registerAllModulesFromPaths(modulePaths) {
+                fileLoader
+                    .loadAllFilesFromPaths(modulePaths)
+                    .forEach(registerModule);
+            }
+
+            function getRegisteredModules() {
+                var containerModules = coreContainer.getModuleRegistry();
+
+                return Object.keys(containerModules);
+            }
+
+            return {
+                getModuleBuilder: coreContainer.getModuleBuilder,
+                getRegisteredModules: getRegisteredModules,
+                loadModule: loadModule,
+                override: override,
+                registerAllModulesFromPaths: registerAllModulesFromPaths,
+                registerModule: registerModule,
+                registerModules: registerModules
+            };
+        }
+
+    }
+
+    var dependencies = [
+        'fileLoader',
+        'moduleUtils',
+        'moduleWrapper'
+    ];
+
+    container.register('registryFactory', registryFactoryBuilder, dependencies);
+
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.fsLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function fsFunctionFake() {
+        throw new Error('Cannot load filesystem modules when not in NodeJS environmet');
+    }
+
+    function fsFactory() {
+        var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+
+        var fsFake = {
+            readdirSync: fsFunctionFake,
+            lstatSync: fsFunctionFake
+        };
+        
+        return isNode ? require('fs') : fsFake;
+    }
+
+    container.register('fs', fsFactory, []);
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.pathLoader = loader;
+    }
+
+})(function (container) {
+    'use strict';
+
+    function pathFactory() {
+        return require('path');
+    }
+
+    container.register('path', pathFactory, []);
+});
+(function () {
+    'use strict';
+
+    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+    var coreContainer = isNode ? require('./coreContainer') : window.djectCoreFactory();
+
+    if (isNode) {
+        module.exports = coreContainer.build('dject');
+    } else {
+        Object
+            .keys(window.djectLoaders)
+            .foreach(function(loaderKey) {
+                window.djectLoaders[loaderKey](coreContainer);
+            });
+
+        window.djectLoaders = undefined;
+        window.dject = coreContainer.build('dject');
+    }
 })();

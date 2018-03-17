@@ -19,7 +19,7 @@
             }
 
             function loadDependencies(moduleName) {
-                const dependencies = coreContainer.getDependencies(moduleName);
+                var dependencies = coreContainer.getDependencies(moduleName);
 
                 dependencies.forEach(function (moduleName) {
                     loadModuleIfMissing(moduleName);

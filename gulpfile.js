@@ -4,11 +4,10 @@ const gulp = require('gulp');
 const mocha = require('gulp-mocha');
 const istanbul = require('gulp-istanbul');
 const eslint = require('gulp-eslint');
-const babel = require('gulp-babel');
 const concat = require('gulp-concat');
-const wrapInIIFE = require('./dev-tools/gulp-wrap-in-iife');
 
 const sourceFiles = [
+    './node_modules/dject-core/index.js',
     'dependencies/**/*.js',
     'index.js',
 ];
@@ -19,11 +18,11 @@ const testFiles = [
 
 gulp.task('babel', () => {
     return gulp.src(sourceFiles)
-        .pipe(babel({
-            presets: ['env']
-        }))
+        // .pipe(babel({
+        //     presets: ['env']
+        // }))
         .pipe(concat('dject.js'))
-        .pipe(wrapInIIFE())
+        // .pipe(wrapInIIFE())
         .pipe(gulp.dest('dist'));
 });
 

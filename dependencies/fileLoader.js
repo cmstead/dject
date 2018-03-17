@@ -10,7 +10,7 @@
 
     function fileLoaderFactory(fs, path) {
 
-        const jsPattern = /^.+\.js$/;
+        var jsPattern = /^.+\.js$/;
 
         function statFile(filepath) {
             try {
