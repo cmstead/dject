@@ -19,21 +19,21 @@
         return function (modulePaths, coreContainer) {
 
             function registerModule(moduleValue, moduleName) {
-                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
-                var dependencies = moduleInfo.dependencies;
-                var name = moduleInfo.name;
+                const moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                const dependencies = moduleInfo.dependencies;
+                const name = moduleInfo.name;
 
-                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+                const wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
 
                 coreContainer.register(name, wrappedModule, dependencies);
             }
 
             function override(moduleValue, moduleName) {
-                var moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
-                var dependencies = moduleInfo.dependencies;
-                var name = moduleInfo.name;
+                const moduleInfo = moduleUtils.getModuleInfo(moduleValue, moduleName);
+                const dependencies = moduleInfo.dependencies;
+                const name = moduleInfo.name;
 
-                var wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
+                const wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
 
                 coreContainer.override(name, wrappedModule, dependencies);
             }
@@ -44,7 +44,7 @@
             }
 
             function loadModuleFromFileSystem(modulePaths, moduleName) {
-                var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+                const moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
 
                 if (moduleInstance !== null) {
                     registerModule(moduleInstance);
@@ -52,7 +52,7 @@
             }
 
             function loadModuleFromInstalledModules(moduleName) {
-                var moduleInstance = moduleLoader.loadInstalledModule(moduleName);
+                const moduleInstance = moduleLoader.loadInstalledModule(moduleName);
 
                 function moduleFactory() {
                     return moduleInstance;
@@ -80,7 +80,7 @@
             }
 
             function getRegisteredModules() {
-                var containerModules = coreContainer.getModuleRegistry();
+                const containerModules = coreContainer.getModuleRegistry();
 
                 return Object.keys(containerModules);
             }
@@ -98,7 +98,7 @@
 
     }
 
-    var dependencies = [
+    const dependencies = [
         'fileLoader',
         'moduleLoader',
         'moduleUtils',

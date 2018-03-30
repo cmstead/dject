@@ -20,7 +20,9 @@ const testFiles = [
 gulp.task('babel', () => {
     return gulp.src(sourceFiles)
         .pipe(babel({
-            // presets: ['es2015', {modules: false}]
+            presets: [
+                ['env', {modules: false}]
+            ]
         }))
         .pipe(concat('dject.js'))
         // .pipe(wrapInIIFE())

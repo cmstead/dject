@@ -8,9 +8,9 @@
 
 })(function(container) {
     'use strict';
-    
-    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-    var djectCoreFactory = isNode ? require('dject-core') : window.djectCoreFactory;
+
+    const isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+    const djectCoreFactory = isNode ? require('dject-core') : window.djectCoreFactory;
 
     function containerFactory() {
         return djectCoreFactory;

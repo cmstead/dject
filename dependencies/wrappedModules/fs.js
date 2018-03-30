@@ -14,9 +14,9 @@
     }
 
     function fsFactory() {
-        var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+        const isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
 
-        var fsFake = {
+        const fsFake = {
             readdirSync: fsFunctionFake,
             lstatSync: fsFunctionFake
         };

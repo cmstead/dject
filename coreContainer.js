@@ -14,8 +14,8 @@ const wrappedModuleFiles = fs
 const dotPattern = /^\.+$/;
 const jsPattern = /^.+\.js$/;
 
-const isModuleFile = 
-    value => 
+const isModuleFile =
+    value =>
         value.match(dotPattern) === null &&
         value.match(jsPattern) !== null;
 

@@ -15,7 +15,7 @@
         }
 
         function loadInstalledModule(moduleName) {
-            var moduleKebabName = caseFromCamelToKebab(moduleName);
+            const moduleKebabName = caseFromCamelToKebab(moduleName);
 
             try {
                 return require(moduleKebabName);

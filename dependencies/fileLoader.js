@@ -10,7 +10,7 @@
 
     function fileLoaderFactory(fs, path) {
 
-        var jsPattern = /^.+\.js$/;
+        const jsPattern = /^.+\.js$/;
 
         function statFile(filepath) {
             try {
@@ -22,17 +22,17 @@
 
         function loadFileFromPath(filePath) {
             return function (filename) {
-                var fullPath = path.join(filePath, filename);
+                const fullPath = path.join(filePath, filename);
                 return require(fullPath);
             }
         }
 
         function isFileInPaths(modulePaths, moduleName) {
-            var fileName = moduleName + '.js';
+            const fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths
+            const acceptedPaths = modulePaths
                 .filter(function (modulePath) {
-                    var filepath = path.join(modulePath, fileName);
+                    const filepath = path.join(modulePath, fileName);
                     return statFile(filepath);
                 });
 
@@ -40,20 +40,20 @@
         }
 
         function loadFileFromPaths(modulePaths, moduleName) {
-            var fileName = moduleName + '.js';
+            const fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths
+            const acceptedPaths = modulePaths
                 .filter(function (modulePath) {
-                    var filepath = path.join(modulePath, fileName);
+                    const filepath = path.join(modulePath, fileName);
                     return statFile(filepath);
                 });
 
             if (acceptedPaths.length > 1) {
-                var message = 'Cannot load module, ' + moduleName + '; duplicate modules exist in the following paths: ' + acceptedPaths.join(',');
+                const message = 'Cannot load module, ' + moduleName + '; duplicate modules exist in the following paths: ' + acceptedPaths.join(',');
                 throw new Error(message);
             }
 
-            var filePath = acceptedPaths[0];
+            const filePath = acceptedPaths[0];
             return typeof filePath !== 'undefined'
                 ? loadFileFromPath(filePath)(fileName)
                 : null;

@@ -21,11 +21,15 @@
     "url": "https://github.com/cmstead/dject/issues"
   },
   "homepage": "https://github.com/cmstead/dject#readme",
+  "engines": {
+    "node": ">=6.10.1"
+  },
+  "engineStrict": true,
   "devDependencies": {
     "approvals": "^2.1.2",
     "approvals-config-factory": "^1.0.0",
     "babel": "^6.23.0",
-    "babel-preset-env": "^1.6.0",
+    "babel-preset-env": "^1.6.1",
     "chai": "^3.5.0",
     "eslint": "^3.19.0",
     "gulp": "^3.9.1",

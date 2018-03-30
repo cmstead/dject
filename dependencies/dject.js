@@ -21,12 +21,12 @@
         function newContainer(config) {
             baseUtils.throwOnBadConfig(config);
 
-            var localConfig = baseUtils.buildLocalConfig(config);
-            var modulePaths = baseUtils.buildModulePaths(localConfig);
+            const localConfig = baseUtils.buildLocalConfig(config);
+            const modulePaths = baseUtils.buildModulePaths(localConfig);
 
-            var coreContainer = containerFactory();
-            var registry = registryFactory(modulePaths, coreContainer);
-            var moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+            const coreContainer = containerFactory();
+            const registry = registryFactory(modulePaths, coreContainer);
+            const moduleBuilder = moduleBuilderFactory(coreContainer, registry);
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
 
@@ -34,7 +34,7 @@
                 if (localConfig.allowOverride) {
                     registry.override(moduleValue, moduleName);
                 } else {
-                    var message = 'Cannot override module, allowOverride is set to false.';
+                    const message = 'Cannot override module, allowOverride is set to false.';
                     throw new Error(message);
                 }
             }
@@ -45,12 +45,12 @@
             }
 
             function register(moduleValue, moduleName) {
-                var localName = typeof moduleName === 'string'
+                const localName = typeof moduleName === 'string'
                     ? moduleName
                     : moduleUtils.getModuleName(moduleValue);
 
                 if (checkModuleDNE(localName)) {
-                    var message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
+                    const message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
                     throw new Error(message);
                 } else {
                     registry.registerModule(moduleValue, moduleName);
@@ -58,21 +58,21 @@
             }
 
             function buildChildConfig(config) {
-                var childConfig = Object.create(config);
+                let childConfig = Object.create(config);
                 childConfig.allowOverride = true;
 
                 return childConfig;
             }
 
             function buildNew() {
-                var childConfig = buildChildConfig(localConfig);
-                var childContainer = newContainer(childConfig);
-                var registeredModules = coreContainer.getModuleRegistry();
+                const childConfig = buildChildConfig(localConfig);
+                const childContainer = newContainer(childConfig);
+                const registeredModules = coreContainer.getModuleRegistry();
 
                 Object
                     .keys(registeredModules)
                     .forEach(function (moduleKey) {
-                        var moduleValue = registeredModules[moduleKey];
+                        const moduleValue = registeredModules[moduleKey];
                         childContainer.register(moduleValue, moduleKey);
                     });
 
@@ -82,8 +82,8 @@
             function getDependencyTree(moduleName) {
                 registry.loadModule(moduleName);
 
-                var moduleBuilder = registry.getModuleBuilder(moduleName);
-                var dependencies = moduleBuilder.dependencies();
+                const moduleBuilder = registry.getModuleBuilder(moduleName);
+                const dependencies = moduleBuilder.dependencies();
 
                 return {
                     name: moduleName,

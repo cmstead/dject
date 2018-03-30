@@ -433,6 +433,8 @@
 
     container.register('moduleLoader', moduleLoaderFactory, []);
 });
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 (function (loader) {
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -471,7 +473,7 @@
         }
 
         function throwOnBadFunction(fn) {
-            var message = 'Cannot register module. Expected function, but got ' + typeof fn + ' with value ' + JSON.stringify(fn, null, 4);
+            var message = 'Cannot register module. Expected function, but got ' + (typeof fn === 'undefined' ? 'undefined' : _typeof(fn)) + ' with value ' + JSON.stringify(fn, null, 4);
 
             if (typeof fn !== 'function') {
                 throw new Error(message);

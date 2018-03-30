@@ -12,10 +12,10 @@
     function moduleWrapperFactory() {
 
         function wrapSingleton(moduleValue) {
-            var generatedModule = null;
+            let generatedModule = null;
 
             function buildModule(args) {
-                var dependencies = Array.prototype.slice.call(args, 0);
+                const dependencies = Array.prototype.slice.call(args, 0);
                 return moduleValue.apply(null, dependencies);
             }
 
@@ -35,8 +35,8 @@
 
         function wrapInstantiable(moduleValue) {
             function instantiableFactory() {
-                var dependencies = Array.prototype.slice.call(arguments, 0);
-                var instance = Object.create(moduleValue.prototype);
+                const dependencies = Array.prototype.slice.call(arguments, 0);
+                const instance = Object.create(moduleValue.prototype);
 
                 moduleValue.apply(instance, dependencies);
 

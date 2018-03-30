@@ -12,13 +12,13 @@
     function moduleUtilsFactory() {
 
         function getModuleName(moduleInstance) {
-            var predefinedName = moduleInstance['@name'];
+            const predefinedName = moduleInstance['@name'];
             return typeof predefinedName === 'string' ? predefinedName : moduleInstance.name;
         }
 
         function getFunctionArgs(fn) {
-            var functionSource = fn.toString();
-            var baseFunctionMatch = functionSource.match(/function\s.*?\(([^)]*)\)/);
+            const functionSource = fn.toString();
+            const baseFunctionMatch = functionSource.match(/function\s.*?\(([^)]*)\)/);
 
             if (baseFunctionMatch !== null) {
                 return baseFunctionMatch[1];
@@ -31,13 +31,13 @@
             try {
                 return getFunctionArgs(fn);
             } catch (e) {
-                var message = 'Unable to parse arguments from function or expression: ' + getModuleName(fn);
+                const message = 'Unable to parse arguments from function or expression: ' + getModuleName(fn);
                 throw new Error(message);
             }
         }
 
         function throwOnBadFunction(fn) {
-            var message = 'Cannot register module. Expected function, but got ' + typeof fn +
+            const message = 'Cannot register module. Expected function, but got ' + typeof fn +
             ' with value ' + JSON.stringify(fn, null, 4);
 
             if(typeof fn !== 'function'){
@@ -56,11 +56,11 @@
         }
 
         function getModuleInfo(moduleValue, moduleName) {
-            var dependencies = getModuleDependencies(moduleValue);
-            var name = typeof moduleName === 'string'
+            const dependencies = getModuleDependencies(moduleValue);
+            const name = typeof moduleName === 'string'
                 ? moduleName
                 : getModuleName(moduleValue);
-            
+
             return {
                 dependencies: dependencies,
                 name: name

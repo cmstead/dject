@@ -26,7 +26,7 @@
     }
 
     function buildLocalConfig(config) {
-        var localConfig = Object.create(config);
+        let localConfig = Object.create(config);
 
         localConfig.allowOverride = valueOrDefault(config.allowOverride, false);
         localConfig.eagerLoad = valueOrDefault(config.eagerLoad, false);

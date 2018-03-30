@@ -19,7 +19,7 @@
             }
 
             function loadDependencies(moduleName) {
-                var dependencies = coreContainer.getDependencies(moduleName);
+                const dependencies = coreContainer.getDependencies(moduleName);
 
                 dependencies.forEach(function (moduleName) {
                     loadModuleIfMissing(moduleName);
@@ -37,7 +37,7 @@
                 try{
                     return buildModule(moduleName);
                 } catch (e) {
-                    var message = 'Dependency chain is either circular or too deep to process: ' + e.message;
+                    const message = 'Dependency chain is either circular or too deep to process: ' + e.message;
                     throw new Error(message);
                 }
             }
