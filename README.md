@@ -2,15 +2,9 @@
 
 ## Dependency injection for node made easy ##
 
-Working with require statements violates one of the core tenants of Martin Fowler's rule for depending on abstractions
-over conretions. This is because every time you require a module, you are telling Node you want precisely one file which
-provides precisely one API.  To break these dependencies, you have to build factories... lots of them.
+Working with require statements violates one of the core tenants of Martin Fowler's rule for depending on abstractions over concretions. This is because every time you require a module, you are telling Node you want precisely one file which provides precisely one API.  To break these dependencies, you have to build factories... lots of them.
 
-DJect is built to simplify workflow to declaring where your node modules live in your project and then simply requesting
-them as needed. Any modules not loaded directly through the container.register() endpoint are lazily loaded from
-the filesystem just in time to fulfill the dependency need. This means your application only loads the dependencies it
-needs and you don't have to spend your time worrying about managing your dependency chain by hand with massive
-factory trees.
+DJect is built to simplify workflow to declaring where your node modules live in your project and then simply requesting them as needed. Any modules not loaded directly through the container.register() endpoint are lazily loaded from the filesystem just in time to fulfill the dependency need. This means your application only loads the dependencies it needs and you don't have to spend your time worrying about managing your dependency chain by hand with massive factory trees.
 
 ## DJect Features ##
 
@@ -24,8 +18,7 @@ factory trees.
 
 ## Getting Started ##
 
-DJect requires a single module to be created and cached by Node. This means your setup is as simple as creating a single 
-JS file, container.js, like the following:
+DJect requires a single module to be created and cached by Node. This means your setup is as simple as creating a single JS file, container.js, like the following:
 
 ~~~
 'use strict'
@@ -184,6 +177,26 @@ const container = require('./configuredDjectContainer');
 const myModule = container.build('myModule');
 ```
 
+Dject will recognize modules installed to the node_modules directory by default. Simply camelCase the name and Dject will do the work. For instance, using the request-promise module:
+
+```javascript
+const requestPromise = container.build('requestPromise');
+```
+
+This will also work in dependency declarations such as:
+
+```javascript
+function myModule (requestPromise) {
+    // do some async stuff with requestPromise
+
+    return {
+        // your API
+    }
+}
+
+module.exports = myModule;
+```
+
 ### dject.getDependencyTree ###
 
 Identify and display all dependencies for a particular module. Any dependencies which have not yet been registered with the system will be identified and loaded.
@@ -340,6 +353,11 @@ modules into a DJect container; throws error on duplicate module
 - `container.registerModules(modules: [object])` -- Registers an array of modules at once; throws error on duplicate module
 
 ## Version History ##
+
+**v1.9.0**
+
+- Added npm installed module recognition to speed the time from install to use
+- Overhauled internals to use a core DI system for simpler construction
 
 **v1.8.0**
 
