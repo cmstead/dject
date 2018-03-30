@@ -9,8 +9,10 @@
 })(function (container) {
     'use strict';
 
+    const isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+
     function pathFactory() {
-        return require('path');
+        return isNode ? require('path') : null;
     }
 
     container.register('path', pathFactory, []);

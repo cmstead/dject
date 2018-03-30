@@ -9,6 +9,7 @@ const concat = require('gulp-concat');
 
 const sourceFiles = [
     './node_modules/dject-core/index.js',
+    './client-setup.js',
     'dependencies/**/*.js',
     'index.js',
 ];

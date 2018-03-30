@@ -98,6 +98,9 @@
 
     return api;
 });
+(function () {
+    window.djectLoaders = {};
+})();
 (function (loader) {
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -136,9 +139,9 @@
 
     function baseUtilsFactory(path) {
         function buildModulePaths(config) {
-            return config.modulePaths.map(function (modulePath) {
+            return typeof config.modulePaths !== 'undefined' ? config.modulePaths.map(function (modulePath) {
                 return path.join(config.cwd, modulePath);
-            });
+            }) : [];
         }
 
         return {
@@ -705,8 +708,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(function (container) {
     'use strict';
 
+    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+
     function pathFactory() {
-        return require('path');
+        return isNode ? require('path') : null;
     }
 
     container.register('path', pathFactory, []);
@@ -720,7 +725,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     if (isNode) {
         module.exports = coreContainer.build('dject');
     } else {
-        Object.keys(window.djectLoaders).foreach(function (loaderKey) {
+        Object.keys(window.djectLoaders).forEach(function (loaderKey) {
             window.djectLoaders[loaderKey](coreContainer);
         });
 

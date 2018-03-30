@@ -37,9 +37,9 @@
 
     function baseUtilsFactory(path) {
         function buildModulePaths(config) {
-            return config.modulePaths.map(function (modulePath) {
-                return path.join(config.cwd, modulePath);
-            })
+            return typeof config.modulePaths !== 'undefined'
+            ? config.modulePaths.map((modulePath) => path.join(config.cwd, modulePath))
+            : [];
         }
 
         return {

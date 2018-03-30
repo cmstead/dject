@@ -9,7 +9,7 @@
     } else {
         Object
             .keys(window.djectLoaders)
-            .foreach(function(loaderKey) {
+            .forEach(function(loaderKey) {
                 window.djectLoaders[loaderKey](coreContainer);
             });
 
