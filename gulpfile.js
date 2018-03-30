@@ -1,6 +1,7 @@
 'use strict';
 
 const gulp = require('gulp');
+const babel = require('gulp-babel');
 const mocha = require('gulp-mocha');
 const istanbul = require('gulp-istanbul');
 const eslint = require('gulp-eslint');
@@ -18,9 +19,9 @@ const testFiles = [
 
 gulp.task('babel', () => {
     return gulp.src(sourceFiles)
-        // .pipe(babel({
-        //     presets: ['env']
-        // }))
+        .pipe(babel({
+            // presets: ['es2015', {modules: false}]
+        }))
         .pipe(concat('dject.js'))
         // .pipe(wrapInIIFE())
         .pipe(gulp.dest('dist'));

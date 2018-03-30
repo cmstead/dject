@@ -6,12 +6,10 @@
     } else {
         window.djectCoreFactory = djectCoreFactory;
     }
-
 })(function () {
 
     var registry = {};
     var api = {};
-
 
     function isRegistered(moduleName) {
         return typeof registry[moduleName] !== 'undefined';
@@ -36,7 +34,7 @@
 
     function set(obj, key, value) {
         obj[key] = value;
-        return obj
+        return obj;
     }
 
     function createBuilder(moduleFactory, dependencies) {
@@ -99,7 +97,6 @@
     api.register = register;
 
     return api;
-
 });
 (function (loader) {
 
@@ -108,7 +105,6 @@
     } else {
         window.djectLoaders.baseUtilsLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -142,7 +138,7 @@
         function buildModulePaths(config) {
             return config.modulePaths.map(function (modulePath) {
                 return path.join(config.cwd, modulePath);
-            })
+            });
         }
 
         return {
@@ -157,15 +153,14 @@
 });
 (function (loader) {
 
-    if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         module.exports = loader;
     } else {
         window.djectLoaders.containerFactoryLoader = loader;
     }
-
-})(function(container) {
+})(function (container) {
     'use strict';
-    
+
     var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
     var djectCoreFactory = isNode ? require('dject-core') : window.djectCoreFactory;
 
@@ -182,18 +177,10 @@
     } else {
         window.djectLoaders.djectLoader = loader;
     }
-
 })(function djectLoader(container) {
     'use strict';
 
-    function djectFactory(
-        baseUtils,
-        containerFactory,
-        fileLoader,
-        moduleBuilderFactory,
-        moduleUtils,
-        registryFactory
-    ) {
+    function djectFactory(baseUtils, containerFactory, fileLoader, moduleBuilderFactory, moduleUtils, registryFactory) {
 
         function newContainer(config) {
             baseUtils.throwOnBadConfig(config);
@@ -205,7 +192,7 @@
             var registry = registryFactory(modulePaths, coreContainer);
             var moduleBuilder = moduleBuilderFactory(coreContainer, registry);
 
-            baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
+            baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry);
 
             function override(moduleValue, moduleName) {
                 if (localConfig.allowOverride) {
@@ -217,14 +204,11 @@
             }
 
             function checkModuleDNE(moduleName) {
-                return localConfig.errorOnModuleDNE
-                    && !fileLoader.isFileInPaths(modulePaths, moduleName);
+                return localConfig.errorOnModuleDNE && !fileLoader.isFileInPaths(modulePaths, moduleName);
             }
 
             function register(moduleValue, moduleName) {
-                var localName = typeof moduleName === 'string'
-                    ? moduleName
-                    : moduleUtils.getModuleName(moduleValue);
+                var localName = typeof moduleName === 'string' ? moduleName : moduleUtils.getModuleName(moduleValue);
 
                 if (checkModuleDNE(localName)) {
                     var message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
@@ -246,12 +230,10 @@
                 var childContainer = newContainer(childConfig);
                 var registeredModules = coreContainer.getModuleRegistry();
 
-                Object
-                    .keys(registeredModules)
-                    .forEach(function (moduleKey) {
-                        var moduleValue = registeredModules[moduleKey];
-                        childContainer.register(moduleValue, moduleKey);
-                    });
+                Object.keys(registeredModules).forEach(function (moduleKey) {
+                    var moduleValue = registeredModules[moduleKey];
+                    childContainer.register(moduleValue, moduleKey);
+                });
 
                 return childContainer;
             }
@@ -287,17 +269,8 @@
         };
     }
 
-    container.register('dject', djectFactory, [
-        'baseUtils',
-        'containerFactory',
-        'fileLoader',
-        'moduleBuilderFactory',
-        'moduleUtils',
-        'registryFactory'
-    ]);
+    container.register('dject', djectFactory, ['baseUtils', 'containerFactory', 'fileLoader', 'moduleBuilderFactory', 'moduleUtils', 'registryFactory']);
 });
-
-
 (function (loader) {
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -305,7 +278,6 @@
     } else {
         window.djectLoaders.fileLoaderLoader = loader;
     }
-
 })(function (container) {
 
     function fileLoaderFactory(fs, path) {
@@ -324,17 +296,16 @@
             return function (filename) {
                 var fullPath = path.join(filePath, filename);
                 return require(fullPath);
-            }
+            };
         }
 
         function isFileInPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths
-                .filter(function (modulePath) {
-                    var filepath = path.join(modulePath, fileName);
-                    return statFile(filepath);
-                });
+            var acceptedPaths = modulePaths.filter(function (modulePath) {
+                var filepath = path.join(modulePath, fileName);
+                return statFile(filepath);
+            });
 
             return acceptedPaths.length > 0;
         }
@@ -342,11 +313,10 @@
         function loadFileFromPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths
-                .filter(function (modulePath) {
-                    var filepath = path.join(modulePath, fileName);
-                    return statFile(filepath);
-                });
+            var acceptedPaths = modulePaths.filter(function (modulePath) {
+                var filepath = path.join(modulePath, fileName);
+                return statFile(filepath);
+            });
 
             if (acceptedPaths.length > 1) {
                 var message = 'Cannot load module, ' + moduleName + '; duplicate modules exist in the following paths: ' + acceptedPaths.join(',');
@@ -354,9 +324,7 @@
             }
 
             var filePath = acceptedPaths[0];
-            return typeof filePath !== 'undefined'
-                ? loadFileFromPath(filePath)(fileName)
-                : null;
+            return typeof filePath !== 'undefined' ? loadFileFromPath(filePath)(fileName) : null;
         }
 
         function isJSFile(filename) {
@@ -364,9 +332,7 @@
         }
 
         function loadAllFilesFromPath(modulePath) {
-            return fs.readdirSync(modulePath)
-                .filter(isJSFile)
-                .map(loadFileFromPath(modulePath));
+            return fs.readdirSync(modulePath).filter(isJSFile).map(loadFileFromPath(modulePath));
         }
 
         function loadAllFilesFromPaths(modulePaths) {
@@ -383,7 +349,6 @@
     }
 
     container.register('fileLoader', fileLoaderFactory, ['fs', 'path']);
-
 });
 (function (loader) {
 
@@ -392,7 +357,6 @@
     } else {
         window.djectLoaders.moduleBuilderFactoryLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -400,7 +364,7 @@
         return function (coreContainer, registry) {
 
             function loadModuleIfMissing(moduleName) {
-                if(!coreContainer.isRegistered(moduleName)){
+                if (!coreContainer.isRegistered(moduleName)) {
                     registry.loadModule(moduleName);
                 }
             }
@@ -421,7 +385,7 @@
             }
 
             function build(moduleName) {
-                try{
+                try {
                     return buildModule(moduleName);
                 } catch (e) {
                     var message = 'Dependency chain is either circular or too deep to process: ' + e.message;
@@ -432,11 +396,42 @@
             return {
                 build: build
             };
-        }
+        };
     }
 
     container.register('moduleBuilderFactory', moduleBuilderFactoryBuilder, []);
+});
+(function (loader) {
 
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.moduleLoaderLoader = loader;
+    }
+})(function (container) {
+
+    function moduleLoaderFactory() {
+
+        function caseFromCamelToKebab(moduleName) {
+            return moduleName.replace(/([A-Z])/g, '-$1');
+        }
+
+        function loadInstalledModule(moduleName) {
+            var moduleKebabName = caseFromCamelToKebab(moduleName);
+
+            try {
+                return require(moduleKebabName);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        return {
+            loadInstalledModule: loadInstalledModule
+        };
+    }
+
+    container.register('moduleLoader', moduleLoaderFactory, []);
 });
 (function (loader) {
 
@@ -445,7 +440,6 @@
     } else {
         window.djectLoaders.moduleUtilsLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -477,10 +471,9 @@
         }
 
         function throwOnBadFunction(fn) {
-            var message = 'Cannot register module. Expected function, but got ' + typeof fn +
-            ' with value ' + JSON.stringify(fn, null, 4);
+            var message = 'Cannot register module. Expected function, but got ' + typeof fn + ' with value ' + JSON.stringify(fn, null, 4);
 
-            if(typeof fn !== 'function'){
+            if (typeof fn !== 'function') {
                 throw new Error(message);
             }
         }
@@ -488,19 +481,17 @@
         function getModuleDependencies(fn) {
             throwOnBadFunction(fn);
 
-            return getArgStr(fn)
-                .replace(/\/\*.*\*\//, '')
-                .split(',')
-                .map(function (paramName) { return paramName.trim(); })
-                .filter(function (paramName) { return paramName.length > 0; });
+            return getArgStr(fn).replace(/\/\*.*\*\//, '').split(',').map(function (paramName) {
+                return paramName.trim();
+            }).filter(function (paramName) {
+                return paramName.length > 0;
+            });
         }
 
         function getModuleInfo(moduleValue, moduleName) {
             var dependencies = getModuleDependencies(moduleValue);
-            var name = typeof moduleName === 'string'
-                ? moduleName
-                : getModuleName(moduleValue);
-            
+            var name = typeof moduleName === 'string' ? moduleName : getModuleName(moduleValue);
+
             return {
                 dependencies: dependencies,
                 name: name
@@ -512,7 +503,6 @@
             getModuleName: getModuleName,
             getModuleInfo: getModuleInfo
         };
-
     }
 
     container.register('moduleUtils', moduleUtilsFactory, []);
@@ -524,7 +514,6 @@
     } else {
         window.djectLoaders.moduleWrapperLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -539,9 +528,7 @@
             }
 
             function singletonFactory() {
-                generatedModule = generatedModule === null
-                    ? buildModule(arguments)
-                    : generatedModule;
+                generatedModule = generatedModule === null ? buildModule(arguments) : generatedModule;
 
                 return generatedModule;
             }
@@ -581,11 +568,9 @@
         return {
             wrapSpecialModule: wrapSpecialModule
         };
-
     }
 
     container.register('moduleWrapper', moduleWrapperFactory, []);
-
 });
 (function (loader) {
 
@@ -594,15 +579,10 @@
     } else {
         window.djectLoaders.registryLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
-    function registryFactoryBuilder(
-        fileLoader,
-        moduleUtils,
-        moduleWrapper
-    ) {
+    function registryFactoryBuilder(fileLoader, moduleLoader, moduleUtils, moduleWrapper) {
 
         return function (modulePaths, coreContainer) {
 
@@ -626,25 +606,42 @@
                 coreContainer.override(name, wrappedModule, dependencies);
             }
 
-
             function registerModules(moduleValues) {
                 moduleValues.forEach(registerModule);
             }
 
+            function loadModuleFromFileSystem(modulePaths, moduleName) {
+                var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+
+                if (moduleInstance !== null) {
+                    registerModule(moduleInstance);
+                }
+            }
+
+            function loadModuleFromInstalledModules(moduleName) {
+                var moduleInstance = moduleLoader.loadInstalledModule(moduleName);
+
+                function moduleFactory() {
+                    return moduleInstance;
+                }
+
+                if (moduleInstance !== null) {
+                    registerModule(moduleFactory, moduleName);
+                }
+            }
+
             function loadModule(moduleName) {
                 if (!coreContainer.isRegistered(moduleName)) {
-                    var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+                    loadModuleFromFileSystem(modulePaths, moduleName);
+                }
 
-                    if (moduleInstance !== null) {
-                        registerModule(moduleInstance);
-                    }
+                if (!coreContainer.isRegistered(moduleName)) {
+                    loadModuleFromInstalledModules(moduleName);
                 }
             }
 
             function registerAllModulesFromPaths(modulePaths) {
-                fileLoader
-                    .loadAllFilesFromPaths(modulePaths)
-                    .forEach(registerModule);
+                fileLoader.loadAllFilesFromPaths(modulePaths).forEach(registerModule);
             }
 
             function getRegisteredModules() {
@@ -662,18 +659,12 @@
                 registerModule: registerModule,
                 registerModules: registerModules
             };
-        }
-
+        };
     }
 
-    var dependencies = [
-        'fileLoader',
-        'moduleUtils',
-        'moduleWrapper'
-    ];
+    var dependencies = ['fileLoader', 'moduleLoader', 'moduleUtils', 'moduleWrapper'];
 
     container.register('registryFactory', registryFactoryBuilder, dependencies);
-
 });
 (function (loader) {
 
@@ -682,7 +673,6 @@
     } else {
         window.djectLoaders.fsLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -697,7 +687,7 @@
             readdirSync: fsFunctionFake,
             lstatSync: fsFunctionFake
         };
-        
+
         return isNode ? require('fs') : fsFake;
     }
 
@@ -710,7 +700,6 @@
     } else {
         window.djectLoaders.pathLoader = loader;
     }
-
 })(function (container) {
     'use strict';
 
@@ -729,11 +718,9 @@
     if (isNode) {
         module.exports = coreContainer.build('dject');
     } else {
-        Object
-            .keys(window.djectLoaders)
-            .foreach(function(loaderKey) {
-                window.djectLoaders[loaderKey](coreContainer);
-            });
+        Object.keys(window.djectLoaders).foreach(function (loaderKey) {
+            window.djectLoaders[loaderKey](coreContainer);
+        });
 
         window.djectLoaders = undefined;
         window.dject = coreContainer.build('dject');

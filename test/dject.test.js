@@ -70,12 +70,12 @@ describe('DJect', function () {
                 this.verify(prettyJson(container.build('testBase')));
             });
 
-            
+
             it('should register a module defined with an arrow function', function () {
                 container.register(() => ({ foo: 'bar'}), 'arrowModule');
                 this.verify(prettyJson(container.build('arrowModule')));
             });
-            
+
 
             it('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
@@ -89,7 +89,7 @@ describe('DJect', function () {
 
                 assert.throws(register, 'Cannot register module. Expected function, but got object with value');
             });
-            
+
             it('should throw an error when a module does not exist in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: './test',
@@ -104,7 +104,7 @@ describe('DJect', function () {
                 const expectedError = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true'
                 assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
             });
-            
+
             it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
                 const testConfig = {
                     cwd: __dirname,
@@ -118,7 +118,7 @@ describe('DJect', function () {
 
                 assert.doesNotThrow(container.register.bind(null, function justInTime() {}));
             });
-            
+
         });
 
         describe('Register Multiple Modules', function () {
@@ -179,6 +179,12 @@ describe('DJect', function () {
 
             it('should load dependencies from file system if they are not pre-loaded', function () {
                 this.verify(prettyJson(container.build('justInTime')));
+            });
+
+            it('should load module from node_modules if not in filesystem', function () {
+                const testResult = container.build('testModule');
+
+                assert.equal(testResult.getContent(), 'Module has been loaded!');
             });
 
             it('should return a list of registered modules', function () {

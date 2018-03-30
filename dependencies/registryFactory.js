@@ -11,6 +11,7 @@
 
     function registryFactoryBuilder(
         fileLoader,
+        moduleLoader,
         moduleUtils,
         moduleWrapper
     ) {
@@ -42,13 +43,33 @@
                 moduleValues.forEach(registerModule);
             }
 
+            function loadModuleFromFileSystem(modulePaths, moduleName) {
+                var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+
+                if (moduleInstance !== null) {
+                    registerModule(moduleInstance);
+                }
+            }
+
+            function loadModuleFromInstalledModules(moduleName) {
+                var moduleInstance = moduleLoader.loadInstalledModule(moduleName);
+
+                function moduleFactory() {
+                    return moduleInstance;
+                }
+
+                if (moduleInstance !== null) {
+                    registerModule(moduleFactory, moduleName);
+                }
+            }
+
             function loadModule(moduleName) {
                 if (!coreContainer.isRegistered(moduleName)) {
-                    var moduleInstance = fileLoader.loadFileFromPaths(modulePaths, moduleName);
+                    loadModuleFromFileSystem(modulePaths, moduleName)
+                }
 
-                    if (moduleInstance !== null) {
-                        registerModule(moduleInstance);
-                    }
+                if (!coreContainer.isRegistered(moduleName)) {
+                    loadModuleFromInstalledModules(moduleName);
                 }
             }
 
@@ -79,6 +100,7 @@
 
     var dependencies = [
         'fileLoader',
+        'moduleLoader',
         'moduleUtils',
         'moduleWrapper'
     ];

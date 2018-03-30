@@ -20,7 +20,7 @@
             readdirSync: fsFunctionFake,
             lstatSync: fsFunctionFake
         };
-        
+
         return isNode ? require('fs') : fsFake;
     }
 
