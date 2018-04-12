@@ -65,12 +65,12 @@
 
             function loadModule(moduleName) {
                 if (!coreContainer.isRegistered(moduleName)) {
-                    loadModuleFromInstalledModules(moduleName);
-                }
-                
-                if (!coreContainer.isRegistered(moduleName)) {
                     loadModuleFromFileSystem(modulePaths, moduleName)
                 }
+
+                if (!coreContainer.isRegistered(moduleName)) {
+                    loadModuleFromInstalledModules(moduleName);
+                }                
             }
 
             function registerAllModulesFromPaths(modulePaths) {
