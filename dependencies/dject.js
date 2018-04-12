@@ -14,6 +14,7 @@
         containerFactory,
         fileLoader,
         moduleBuilderFactory,
+        moduleLoader,
         moduleUtils,
         registryFactory
     ) {
@@ -30,31 +31,47 @@
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
 
-            function override(moduleValue, moduleName) {
-                if (localConfig.allowOverride) {
-                    registry.override(moduleValue, moduleName);
-                } else {
+            function checkModuleDNE(moduleName) {
+                return localConfig.errorOnModuleDNE
+                    && !fileLoader.isFileInPaths(modulePaths, moduleName)
+                    && moduleLoader.loadInstalledModule(moduleName) === null;
+            }
+
+            function throwIfModuleDNE(moduleName) {
+                if (checkModuleDNE(moduleName)) {
+                    const message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
+                    throw new Error(message);
+                }
+            }
+
+            function throwIfOverrideDisallowed() {
+                if (!localConfig.allowOverride) {
                     const message = 'Cannot override module, allowOverride is set to false.';
                     throw new Error(message);
                 }
             }
 
-            function checkModuleDNE(moduleName) {
-                return localConfig.errorOnModuleDNE
-                    && !fileLoader.isFileInPaths(modulePaths, moduleName);
+            function getLocalModuleName(moduleValue, moduleName) {
+                return typeof moduleName === 'string'
+                    ? moduleName
+                    : moduleUtils.getModuleName(moduleValue);
+            }
+
+            function override(moduleValue, moduleName) {
+                const localName = getLocalModuleName(moduleValue, moduleName);
+
+                throwIfOverrideDisallowed();
+                throwIfModuleDNE(localName);
+
+                registry.override(moduleValue, localName);
             }
 
             function register(moduleValue, moduleName) {
-                const localName = typeof moduleName === 'string'
-                    ? moduleName
-                    : moduleUtils.getModuleName(moduleValue);
+                const localName = getLocalModuleName(moduleValue, moduleName);
 
-                if (checkModuleDNE(localName)) {
-                    const message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
-                    throw new Error(message);
-                } else {
-                    registry.registerModule(moduleValue, moduleName);
-                }
+                throwIfModuleDNE(localName);
+
+                registry.registerModule(moduleValue, moduleName);
             }
 
             function buildChildConfig(config) {
@@ -115,6 +132,7 @@
         'containerFactory',
         'fileLoader',
         'moduleBuilderFactory',
+        'moduleLoader',
         'moduleUtils',
         'registryFactory'
     ]);

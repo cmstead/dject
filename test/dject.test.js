@@ -76,7 +76,6 @@ describe('DJect', function () {
                 this.verify(prettyJson(container.build('arrowModule')));
             });
 
-
             it('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
                 this.verify(prettyJson(container.build('testComposed')));
@@ -103,6 +102,20 @@ describe('DJect', function () {
 
                 const expectedError = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true'
                 assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
+            });
+
+            it('should not throw an error when a module exists in node_modules and the setting is set to check for existance', function () {
+                const testConfig = {
+                    cwd: './test',
+                    modulePaths: [
+                        'testModules'
+                    ],
+                    errorOnModuleDNE: true
+                };
+
+                const container = dject.new(testConfig);
+
+                assert.doesNotThrow(container.register.bind(null, function testModule() {}));
             });
 
             it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {

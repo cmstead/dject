@@ -354,6 +354,10 @@ modules into a DJect container; throws error on duplicate module
 
 ## Version History ##
 
+**v1.9.2**
+
+- Fixed bug with registering modules which are installed in node_modules
+
 **v1.9.0**
 
 - Added npm installed module recognition to speed the time from install to use

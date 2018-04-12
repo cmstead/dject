@@ -11,7 +11,7 @@
     function moduleLoaderFactory() {
 
         function caseFromCamelToKebab(moduleName) {
-            return moduleName.replace(/([A-Z])/g, '-$1');
+            return moduleName.replace(/([A-Z])/g, '-$1').toLowerCase();
         }
 
         function loadInstalledModule(moduleName) {
