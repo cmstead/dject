@@ -224,6 +224,23 @@ describe('DJect', function () {
 
         });
 
+        describe('__container', function () {
+
+            it('is available as a dependency from a container', function () {
+                const __container = container.build('__container');
+
+                assert.equal(container, __container);
+            });
+
+            it('is always the current container, even as a child', function () {
+                const childContainer = container.new();
+                const __container = childContainer.build('__container');
+
+                assert.equal(childContainer, __container);
+            });
+
+        });
+
     });
 
 });

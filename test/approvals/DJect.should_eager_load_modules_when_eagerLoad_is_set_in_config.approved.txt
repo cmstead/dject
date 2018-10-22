@@ -7,5 +7,6 @@
     "otherBase",
     "testBase",
     "testComposed",
-    "testSingleton"
+    "testSingleton",
+    "__container"
 ]

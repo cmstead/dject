@@ -89,6 +89,10 @@
                 Object
                     .keys(registeredModules)
                     .forEach(function (moduleKey) {
+                        if(moduleKey === '__container') {
+                            return;
+                        }
+
                         const moduleValue = registeredModules[moduleKey];
                         childContainer.register(moduleValue, moduleKey);
                     });
@@ -110,7 +114,7 @@
                 };
             }
 
-            return {
+            const containerApi = {
                 build: moduleBuilder.build,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
@@ -120,6 +124,10 @@
                 register: register,
                 registerModules: registry.registerModules
             };
+
+            registry.registerModule(function __container() { return containerApi; });
+
+            return containerApi;
         }
 
         return {
