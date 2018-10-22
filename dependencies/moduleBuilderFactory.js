@@ -37,7 +37,7 @@
                 try{
                     return buildModule(moduleName);
                 } catch (e) {
-                    const message = 'Dependency chain is either circular or too deep to process: ' + e.message;
+                    const message = 'An error occurred while processing dependencies: ' + e.message;
                     throw new Error(message);
                 }
             }
