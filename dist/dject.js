@@ -183,7 +183,7 @@
 })(function djectLoader(container) {
     'use strict';
 
-    function djectFactory(baseUtils, containerFactory, fileLoader, moduleBuilderFactory, moduleUtils, registryFactory) {
+    function djectFactory(baseUtils, containerFactory, fileLoader, moduleBuilderFactory, moduleLoader, moduleUtils, registryFactory) {
 
         function newContainer(config) {
             baseUtils.throwOnBadConfig(config);
@@ -197,28 +197,43 @@
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry);
 
-            function override(moduleValue, moduleName) {
-                if (localConfig.allowOverride) {
-                    registry.override(moduleValue, moduleName);
-                } else {
+            function checkModuleDNE(moduleName) {
+                return localConfig.errorOnModuleDNE && !fileLoader.isFileInPaths(modulePaths, moduleName) && moduleLoader.loadInstalledModule(moduleName) === null;
+            }
+
+            function throwIfModuleDNE(moduleName) {
+                if (checkModuleDNE(moduleName)) {
+                    var message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
+                    throw new Error(message);
+                }
+            }
+
+            function throwIfOverrideDisallowed() {
+                if (!localConfig.allowOverride) {
                     var message = 'Cannot override module, allowOverride is set to false.';
                     throw new Error(message);
                 }
             }
 
-            function checkModuleDNE(moduleName) {
-                return localConfig.errorOnModuleDNE && !fileLoader.isFileInPaths(modulePaths, moduleName);
+            function getLocalModuleName(moduleValue, moduleName) {
+                return typeof moduleName === 'string' ? moduleName : moduleUtils.getModuleName(moduleValue);
+            }
+
+            function override(moduleValue, moduleName) {
+                var localName = getLocalModuleName(moduleValue, moduleName);
+
+                throwIfOverrideDisallowed();
+                throwIfModuleDNE(localName);
+
+                registry.override(moduleValue, localName);
             }
 
             function register(moduleValue, moduleName) {
-                var localName = typeof moduleName === 'string' ? moduleName : moduleUtils.getModuleName(moduleValue);
+                var localName = getLocalModuleName(moduleValue, moduleName);
 
-                if (checkModuleDNE(localName)) {
-                    var message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
-                    throw new Error(message);
-                } else {
-                    registry.registerModule(moduleValue, moduleName);
-                }
+                throwIfModuleDNE(localName);
+
+                registry.registerModule(moduleValue, moduleName);
             }
 
             function buildChildConfig(config) {
@@ -234,6 +249,10 @@
                 var registeredModules = coreContainer.getModuleRegistry();
 
                 Object.keys(registeredModules).forEach(function (moduleKey) {
+                    if (moduleKey === '__container') {
+                        return;
+                    }
+
                     var moduleValue = registeredModules[moduleKey];
                     childContainer.register(moduleValue, moduleKey);
                 });
@@ -255,7 +274,7 @@
                 };
             }
 
-            return {
+            var containerApi = {
                 build: moduleBuilder.build,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
@@ -265,6 +284,12 @@
                 register: register,
                 registerModules: registry.registerModules
             };
+
+            registry.registerModule(function __container() {
+                return containerApi;
+            });
+
+            return containerApi;
         }
 
         return {
@@ -272,7 +297,7 @@
         };
     }
 
-    container.register('dject', djectFactory, ['baseUtils', 'containerFactory', 'fileLoader', 'moduleBuilderFactory', 'moduleUtils', 'registryFactory']);
+    container.register('dject', djectFactory, ['baseUtils', 'containerFactory', 'fileLoader', 'moduleBuilderFactory', 'moduleLoader', 'moduleUtils', 'registryFactory']);
 });
 (function (loader) {
 
@@ -283,21 +308,13 @@
     }
 })(function (container) {
 
-    function fileLoaderFactory(fs, path) {
+    function fileLoaderFactory(fs, glob, path) {
 
         var jsPattern = /^.+\.js$/;
 
-        function statFile(filepath) {
-            try {
-                return fs.lstatSync(filepath).isFile();
-            } catch (e) {
-                return false;
-            }
-        }
-
         function loadFileFromPath(filePath) {
-            return function (filename) {
-                var fullPath = path.join(filePath, filename);
+            return function (fileName) {
+                var fullPath = path.join(filePath, fileName);
                 return require(fullPath);
             };
         }
@@ -305,20 +322,26 @@
         function isFileInPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths.filter(function (modulePath) {
-                var filepath = path.join(modulePath, fileName);
-                return statFile(filepath);
+            var acceptedPaths = getFilePathsFromModulePaths(modulePaths).filter(function (filePath) {
+                return filePath.endsWith(fileName);
             });
 
             return acceptedPaths.length > 0;
         }
 
+        function buildGlobPath(pathValue) {
+            if (jsPattern.test(pathValue)) {
+                return pathValue;
+            } else {
+                return pathValue + path.sep + '*.js';
+            }
+        }
+
         function loadFileFromPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
-            var acceptedPaths = modulePaths.filter(function (modulePath) {
-                var filepath = path.join(modulePath, fileName);
-                return statFile(filepath);
+            var acceptedPaths = getFilePathsFromModulePaths(modulePaths).filter(function (filePath) {
+                return filePath.endsWith(fileName);
             });
 
             if (acceptedPaths.length > 1) {
@@ -326,22 +349,39 @@
                 throw new Error(message);
             }
 
-            var filePath = acceptedPaths[0];
-            return typeof filePath !== 'undefined' ? loadFileFromPath(filePath)(fileName) : null;
+            var filePath = acceptedPaths.length > 0 ? getFileFolder(acceptedPaths[0]) : null;
+
+            return filePath !== null ? loadFileFromPath(filePath)(fileName) : null;
         }
 
-        function isJSFile(filename) {
-            return filename.match(jsPattern) !== null;
+        function getFileName(filePath) {
+            var pathTokens = filePath.split(/[\/\\]/);
+
+            return pathTokens.pop();
         }
 
-        function loadAllFilesFromPath(modulePath) {
-            return fs.readdirSync(modulePath).filter(isJSFile).map(loadFileFromPath(modulePath));
+        function getFileFolder(filePath) {
+            var pathTokens = filePath.split(/[\/\\]/);
+            var folderPathTokens = pathTokens.slice(0, pathTokens.length - 1);
+
+            return folderPathTokens.join(path.sep);
+        }
+
+        function getFilePathsFromModulePaths(modulePaths) {
+            return modulePaths.map(buildGlobPath).map(function (globPath) {
+                return glob.sync(globPath);
+            }).reduce(function (currentPaths, newPaths) {
+                return currentPaths.concat(newPaths);
+            });
         }
 
         function loadAllFilesFromPaths(modulePaths) {
-            return modulePaths.reduce(function (moduleOutput, modulePath) {
-                return moduleOutput.concat(loadAllFilesFromPath(modulePath));
-            }, []);
+            return getFilePathsFromModulePaths(modulePaths).map(function (filePath) {
+                var fileName = getFileName(filePath);
+                var folderName = getFileFolder(filePath);
+
+                return loadFileFromPath(folderName)(fileName);
+            });
         }
 
         return {
@@ -351,7 +391,7 @@
         };
     }
 
-    container.register('fileLoader', fileLoaderFactory, ['fs', 'path']);
+    container.register('fileLoader', fileLoaderFactory, ['fs', 'glob', 'path']);
 });
 (function (loader) {
 
@@ -391,7 +431,7 @@
                 try {
                     return buildModule(moduleName);
                 } catch (e) {
-                    var message = 'Dependency chain is either circular or too deep to process: ' + e.message;
+                    var message = 'An error occurred while processing dependencies: ' + e.message;
                     throw new Error(message);
                 }
             }
@@ -416,14 +456,14 @@
     function moduleLoaderFactory() {
 
         function caseFromCamelToKebab(moduleName) {
-            return moduleName.replace(/([A-Z])/g, '-$1');
+            return moduleName.replace(/([A-Z])/g, '-$1').toLowerCase();
         }
 
         function loadInstalledModule(moduleName) {
-            var moduleKebabName = caseFromCamelToKebab(moduleName);
+            var moduleKebabCaseName = caseFromCamelToKebab(moduleName);
 
             try {
-                return require(moduleKebabName);
+                return require(moduleKebabCaseName);
             } catch (e) {
                 return null;
             }
@@ -697,6 +737,34 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     container.register('fs', fsFactory, []);
+});
+(function (loader) {
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = loader;
+    } else {
+        window.djectLoaders.globLoader = loader;
+    }
+})(function (container) {
+    'use strict';
+
+    function globFunctionFake() {
+        throw new Error('Cannot load filesystem modules when not in NodeJS environmet');
+    }
+
+    function globFactory() {
+        var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+
+        function globFake() {
+            globFunctionFake();
+        }
+
+        globFake.sync = globFunctionFake;
+
+        return isNode ? require('glob') : globFake;
+    }
+
+    container.register('glob', globFactory, []);
 });
 (function (loader) {
 

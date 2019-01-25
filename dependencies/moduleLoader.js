@@ -15,10 +15,10 @@
         }
 
         function loadInstalledModule(moduleName) {
-            const moduleKebabName = caseFromCamelToKebab(moduleName);
+            const moduleKebabCaseName = caseFromCamelToKebab(moduleName);
 
             try {
-                return require(moduleKebabName);
+                return require(moduleKebabCaseName);
             } catch (e) {
                 return null;
             }

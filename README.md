@@ -27,7 +27,8 @@ var config = {
     cwd: './spec',
     modulePaths: [
         'side-load-modules',
-        'testModules'
+        'testModules',
+        'globbedModules/**/*.js'
     ],
     allowOverride: false,
     eagerLoad: false,
@@ -353,6 +354,12 @@ modules into a DJect container; throws error on duplicate module
 - `container.registerModules(modules: [object])` -- Registers an array of modules at once; throws error on duplicate module
 
 ## Version History ##
+
+**v1.11.0**
+
+- Introduced globbing
+    - Default file glob (when non specified) is *.js
+    - Recursive glob only when specified in the config
 
 **v1.9.2**
 

@@ -70,7 +70,7 @@
 
                 if (!coreContainer.isRegistered(moduleName)) {
                     loadModuleFromInstalledModules(moduleName);
-                }                
+                }
             }
 
             function registerAllModulesFromPaths(modulePaths) {

@@ -1,12 +1,12 @@
 [
     "extraTestModule",
-    "TestInstantiable",
     "circular1",
     "circular2",
     "duplicate",
     "otherBase",
     "testBase",
     "testComposed",
+    "TestInstantiable",
     "testSingleton",
     "__container"
 ]

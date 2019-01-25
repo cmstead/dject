@@ -21,7 +21,7 @@ describe('DJect', function () {
             cwd: __dirname,
             modulePaths: [
                 'side-load-modules',
-                'testModules'
+                'testModules/**/*.js'
             ]
         };
     });
