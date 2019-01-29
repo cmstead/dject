@@ -4,6 +4,7 @@
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
+    "build-readme": "node ./node_modules/booklisp ./readme-source/readme.source.md ./README.md",
     "test": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js"
   },
   "repository": {
@@ -30,6 +31,7 @@
     "approvals-config-factory": "^1.0.0",
     "babel": "^6.23.0",
     "babel-preset-env": "^1.7.0",
+    "booklisp": "^1.7.2",
     "chai": "^3.5.0",
     "eslint": "^3.19.0",
     "gulp": "^3.9.1",
@@ -42,10 +44,6 @@
     "gulp-uglify": "^3.0.1",
     "mocha": "^3.4.1",
     "pump": "^3.0.0",
-    "quokka-mocha-approvals-helper": "^1.0.0",
-    "quokka-mocha-bdd": "^1.3.0",
-    "quokka-prerun": "^1.0.0",
-    "quokka-signet-explorer": "^1.2.0",
     "test-module": "file:test/fixtures/test-module",
     "through2": "^2.0.5"
   },
