@@ -72,7 +72,7 @@ describe('DJect', function () {
 
 
             it('should register a module defined with an arrow function', function () {
-                container.register(() => ({ foo: 'bar'}), 'arrowModule');
+                container.register(() => ({ foo: 'bar' }), 'arrowModule');
                 this.verify(prettyJson(container.build('arrowModule')));
             });
 
@@ -82,7 +82,7 @@ describe('DJect', function () {
             });
 
             it('should throw an error if value is not a function', function () {
-                function register () {
+                function register() {
                     container.register({ foo: 'bar' });
                 }
 
@@ -101,7 +101,7 @@ describe('DJect', function () {
                 const container = dject.new(testConfig);
 
                 const expectedError = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true'
-                assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
+                assert.throws(container.register.bind(null, function myDependency() { }), expectedError);
             });
 
             it('should not throw an error when a module exists in node_modules and the setting is set to check for existance', function () {
@@ -115,7 +115,7 @@ describe('DJect', function () {
 
                 const container = dject.new(testConfig);
 
-                assert.doesNotThrow(container.register.bind(null, function testModule() {}));
+                assert.doesNotThrow(container.register.bind(null, function testModule() { }));
             });
 
             it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
@@ -129,7 +129,7 @@ describe('DJect', function () {
 
                 const container = dject.new(testConfig);
 
-                assert.doesNotThrow(container.register.bind(null, function justInTime() {}));
+                assert.doesNotThrow(container.register.bind(null, function justInTime() { }));
             });
 
         });
@@ -186,9 +186,61 @@ describe('DJect', function () {
                 assert.equal(container.build('testSingleton'), firstInstance);
             });
 
-            it('should properly instantiate standalone objects', function () {
-                this.verify(container.build('TestInstantiable').toString());
+
+            describe('instantiable modules', function () {
+                it('should properly instantiate standalone objects', function () {
+                    const constructedModule = container.build('TestInstantiable');
+
+                    this.verify(constructedModule.toString());
+                });
+
+                it('constructs a dependency tree with an instantiable object in the middle', function () {
+                    function localTestModule(TestInstantiable) {
+                        return {
+                            doTheThing: () => TestInstantiable.getObjs()
+                        }
+                    }
+
+                    container.register(localTestModule);
+
+                    const constructedModule = container.build('localTestModule');
+
+                    this.verify(JSON.stringify(constructedModule.doTheThing(), null, 4));
+                });
+
+                it('constructs an instantiable module with no dependencies', function () {
+                    const constructedModule = container.build('NoDependenciesTestInstantiable');
+
+                    constructedModule
+                        .add('foo', 'bar')
+                        .add('baz', 'quux');
+
+                    assert.equal(constructedModule.get('baz'), 'quux');
+                });
+
+                it('constructs a dependency tree with an instantiable object in the middle with no dependencies', function () {
+                    function localTestModule(NoDependenciesTestInstantiable) {
+                        return {
+                            doTheThing: function () {
+                                NoDependenciesTestInstantiable
+                                    .add('foo', 'bar')
+                                    .add('baz', 'quux');
+
+                                return NoDependenciesTestInstantiable.get('foo');
+                            }
+                        }
+                    }
+
+                    container.register(localTestModule);
+
+                    const constructedModule = container.build('localTestModule');
+
+                    assert.equal(constructedModule.doTheThing(), 'bar');
+                });
+
+
             });
+
 
             it('should load dependencies from file system if they are not pre-loaded', function () {
                 this.verify(prettyJson(container.build('justInTime')));
@@ -219,13 +271,13 @@ describe('DJect', function () {
                 container.build('justInTime');
                 var subcontainer = container.new();
 
-                assert.doesNotThrow(subcontainer.override.bind(null, function justInTime(){}));
+                assert.doesNotThrow(subcontainer.override.bind(null, function justInTime() { }));
             });
 
             it('should consume overriding dependencies', function () {
                 container.build('justInTime');
 
-                container.register(function testModule(justInTime){
+                container.register(function testModule(justInTime) {
                     function doSomeStuff() {
                         justInTime.doStuff();
                     }
@@ -237,7 +289,7 @@ describe('DJect', function () {
 
                 var overridingModuleUsed = false;
 
-                subcontainer.override(function justInTime(){
+                subcontainer.override(function justInTime() {
                     function doStuff() {
                         overridingModuleUsed = true;
                     }

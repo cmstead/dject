@@ -3,6 +3,7 @@
     "circular1",
     "circular2",
     "duplicate",
+    "NoDependenciesTestInstantiable",
     "otherBase",
     "testBase",
     "testComposed",

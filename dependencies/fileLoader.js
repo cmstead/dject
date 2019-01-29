@@ -40,10 +40,11 @@
 
         function loadFileFromPaths(modulePaths, moduleName) {
             const fileName = moduleName + '.js';
+            const fileTestPattern = new RegExp('[\\/\\\\]' + moduleName + '\\.js$', 'i');
 
             const acceptedPaths = getFilePathsFromModulePaths(modulePaths)
                 .filter(function (filePath) {
-                    return filePath.endsWith(fileName);
+                    return fileTestPattern.test(filePath);
                 });
 
             if (acceptedPaths.length > 1) {

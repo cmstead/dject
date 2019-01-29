@@ -345,9 +345,10 @@
 
         function loadFileFromPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
+            var fileTestPattern = new RegExp('[\\/\\\\]' + moduleName + '\\.js$', 'i');
 
             var acceptedPaths = getFilePathsFromModulePaths(modulePaths).filter(function (filePath) {
-                return filePath.endsWith(fileName);
+                return fileTestPattern.test(filePath);
             });
 
             if (acceptedPaths.length > 1) {
