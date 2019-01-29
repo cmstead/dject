@@ -10,8 +10,6 @@
 
     function fileLoaderFactory(fs, glob, path) {
 
-        const jsPattern = /^.+\.js$/;
-
         function loadFileFromPath(filePath) {
             return function (fileName) {
                 const fullPath = path.join(filePath, fileName);
@@ -22,7 +20,7 @@
         function isFileInPaths(modulePaths, moduleName) {
             const fileName = moduleName + '.js';
 
-            const acceptedPaths = getFilePathsFromModulePaths(modulePaths)
+            const acceptedPaths = modulePaths
                 .filter(function (filePath) {
                     return filePath.endsWith(fileName);
                 });
@@ -30,19 +28,11 @@
             return acceptedPaths.length > 0;
         }
 
-        function buildGlobPath(pathValue) {
-            if (jsPattern.test(pathValue)) {
-                return pathValue;
-            } else {
-                return pathValue + path.sep + '*.js';
-            }
-        }
-
         function loadFileFromPaths(modulePaths, moduleName) {
             const fileName = moduleName + '.js';
             const fileTestPattern = new RegExp('[\\/\\\\]' + moduleName + '\\.js$', 'i');
 
-            const acceptedPaths = getFilePathsFromModulePaths(modulePaths)
+            const acceptedPaths = modulePaths
                 .filter(function (filePath) {
                     return fileTestPattern.test(filePath);
                 });
@@ -75,23 +65,8 @@
             return folderPathTokens.join(path.sep);
         }
 
-        let globbedPaths = null;
-
-        function getFilePathsFromModulePaths(modulePaths) {
-            globbedPaths = modulePaths
-                .map(buildGlobPath)
-                .map(globPath => glob.sync(globPath))
-                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths));
-
-            return globbedPaths;
-        }
-
         function loadAllFilesFromPaths(modulePaths) {
-            const filePaths = globbedPaths === null
-                ? getFilePathsFromModulePaths(modulePaths)
-                : globbedPaths;
-
-            return filePaths.map(function (filePath) {
+            return modulePaths.map(function (filePath) {
                 const fileName = getFileName(filePath);
                 const folderName = getFileFolder(filePath);
 

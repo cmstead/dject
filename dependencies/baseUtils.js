@@ -35,11 +35,39 @@
         return localConfig;
     }
 
-    function baseUtilsFactory(path) {
-        function buildModulePaths(config) {
+    function baseUtilsFactory(glob, path) {
+
+        function getModulePathsArray(config) {
             return typeof config.modulePaths !== 'undefined'
-            ? config.modulePaths.map((modulePath) => path.join(config.cwd, modulePath))
-            : [];
+                ? config.modulePaths.map((modulePath) => path.join(config.cwd, modulePath))
+                : [];
+        }
+
+        const jsPattern = /^.+\.js$/;
+
+        function buildGlobPath(pathValue) {
+            if (jsPattern.test(pathValue)) {
+                return pathValue;
+            } else {
+                return pathValue + path.sep + '*.js';
+            }
+        }
+
+
+        function buildAllModulePaths(modulePaths) {
+            const globbedPaths = modulePaths
+                .map(buildGlobPath)
+                .map(globPath => glob.sync(globPath))
+                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths));
+
+            return globbedPaths;
+
+        }
+
+        function buildModulePaths(config) {
+            const modulePathsArray = getModulePathsArray(config);
+
+            return buildAllModulePaths(modulePathsArray);
         }
 
         return {
@@ -50,5 +78,5 @@
         };
     }
 
-    container.register('baseUtils', baseUtilsFactory, ['path']);
+    container.register('baseUtils', baseUtilsFactory, ['glob', 'path']);
 });
