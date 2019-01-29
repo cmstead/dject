@@ -75,21 +75,28 @@
             return folderPathTokens.join(path.sep);
         }
 
+        let globbedPaths = null;
+
         function getFilePathsFromModulePaths(modulePaths) {
-            return modulePaths
+            globbedPaths = modulePaths
                 .map(buildGlobPath)
                 .map(globPath => glob.sync(globPath))
-                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths))
+                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths));
+
+            return globbedPaths;
         }
 
         function loadAllFilesFromPaths(modulePaths) {
-            return getFilePathsFromModulePaths(modulePaths)
-                .map(function (filePath) {
-                    const fileName = getFileName(filePath);
-                    const folderName = getFileFolder(filePath);
+            const filePaths = globbedPaths === null
+                ? getFilePathsFromModulePaths(modulePaths)
+                : globbedPaths;
 
-                    return loadFileFromPath(folderName)(fileName);
-                });
+            return filePaths.map(function (filePath) {
+                const fileName = getFileName(filePath);
+                const folderName = getFileFolder(filePath);
+
+                return loadFileFromPath(folderName)(fileName);
+            });
         }
 
         return {
