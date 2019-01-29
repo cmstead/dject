@@ -222,6 +222,38 @@ describe('DJect', function () {
                 assert.doesNotThrow(subcontainer.override.bind(null, function justInTime(){}));
             });
 
+            it('should consume overriding dependencies', function () {
+                container.build('justInTime');
+
+                container.register(function testModule(justInTime){
+                    function doSomeStuff() {
+                        justInTime.doStuff();
+                    }
+                    return {
+                        doSomeStuff: doSomeStuff
+                    };
+                });
+                var subcontainer = container.new();
+
+                var overridingModuleUsed = false;
+
+                subcontainer.override(function justInTime(){
+                    function doStuff() {
+                        overridingModuleUsed = true;
+                    }
+
+                    return {
+                        doStuff: doStuff
+                    };
+                });
+
+                const testModule = subcontainer.build('testModule');
+
+                testModule.doSomeStuff();
+
+                assert.isTrue(overridingModuleUsed);
+            });
+
         });
 
         describe('__container', function () {

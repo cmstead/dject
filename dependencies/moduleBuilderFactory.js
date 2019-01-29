@@ -30,6 +30,7 @@
             function buildModule(moduleName) {
                 loadModuleIfMissing(moduleName);
                 loadDependencies(moduleName);
+
                 return coreContainer.build(moduleName);
             }
 

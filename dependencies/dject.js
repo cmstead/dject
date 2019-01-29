@@ -94,7 +94,7 @@
                         }
 
                         const moduleValue = registeredModules[moduleKey];
-                        childContainer.register(moduleValue, moduleKey);
+                        childContainer.register(moduleValue.originalModule, moduleKey);
                     });
 
                 return childContainer;
