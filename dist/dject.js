@@ -46,6 +46,12 @@
             return dependencies.slice(0);
         }
 
+        Object.defineProperty(moduleBuilder, 'originalModule', {
+            value: moduleFactory,
+            writeable: false,
+            configurable: false
+        });
+
         return set(moduleBuilder, 'dependencies', getDependencies);
     }
 
@@ -254,7 +260,7 @@
                     }
 
                     var moduleValue = registeredModules[moduleKey];
-                    childContainer.register(moduleValue, moduleKey);
+                    childContainer.register(moduleValue.originalModule, moduleKey);
                 });
 
                 return childContainer;
@@ -424,6 +430,7 @@
             function buildModule(moduleName) {
                 loadModuleIfMissing(moduleName);
                 loadDependencies(moduleName);
+
                 return coreContainer.build(moduleName);
             }
 
@@ -523,9 +530,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             }
         }
 
-        function getModuleDependencies(fn) {
-            throwOnBadFunction(fn);
-
+        function buildModuleDependencyList(fn) {
             return getArgStr(fn).replace(/\/\*.*\*\//, '').split(',').map(function (paramName) {
                 return paramName.trim();
             }).filter(function (paramName) {
@@ -533,8 +538,21 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             });
         }
 
+        function getModuleDependencies(fn) {
+            throwOnBadFunction(fn);
+
+            if (_typeof(fn['@dependencies']) === 'object') {
+                return fn['@dependencies'];
+            } else if (typeof fn.dependencies === 'function') {
+                return fn.dependencies();
+            } else {
+                return buildModuleDependencyList(fn);
+            }
+        }
+
         function getModuleInfo(moduleValue, moduleName) {
             var dependencies = getModuleDependencies(moduleValue);
+
             var name = typeof moduleName === 'string' ? moduleName : getModuleName(moduleValue);
 
             return {
