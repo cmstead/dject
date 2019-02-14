@@ -20,6 +20,7 @@ in a major way.
 - `dject.new(config: object)` -- Create a new DJect IoC container; `var container = dject.new();`
 - `container.build(moduleName: string)` -- Request a fully constructed module from the DJect container; if the module name
 is not associated to a module already, DJect will reach out to the file system to create your module
+- `container.buildDependencyMap(dependencies: array<string>, injectedDependencies: array<any>)` -- Zip dependency names and injected dependency array into a single object/dictionary
 - `container.getDependencyTree(moduleName: string)` -- Returns a tree of all dependencies a module depends upon
 - `container.getRegisteredModules()` -- Returns a list of all modules currently registered to a DJect container
 - `container.loadModule(moduleName: string)` -- Loads a module into memory eagerly

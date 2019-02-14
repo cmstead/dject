@@ -48,7 +48,7 @@ TestInstantiable.prototype = {
     }
 };
 
-TestInstantiable['@instantiable'] = true; // optional if false
+TestInstantiable['@instantiable'] = true; // required if true
 TestInstantiable['@dependencies'] = ['testBase', 'otherBase']; // optional
 
 module.exports = TestInstantiable;
@@ -57,9 +57,46 @@ module.exports = TestInstantiable;
 This module is instantiable, and it is annotated at the bottom to tell DJect as much. The instantiable tag is unique to
 instantiable objects and will be covered in the next section.
 
+### Using Dject in client-side ES Next modules ###
+
+Dject can be used in client-side applications, even using import statements.  The recommended module format is as follows.
+
+```javascript
+const dependencies = [
+    '__container',
+    'httpRequestThing',
+    'businessLogic'
+];
+
+function myModule(...injectedDependencies) {
+    const [container] = injectedDependencies;
+
+    const {
+        httpRequestThing,
+        businessLogic
+    } = container.buildDependencyMap(dependencies, injectedDependencies);
+    
+    function myBehavior(recordId) {
+        return httpRequestThing.get(`/a/url/${recordId}`)
+            .then((data) => buseinssLogic.processData(data));
+    }
+
+    return {
+        myBehavior
+    };
+}
+
+myModule['@dependencies'] = dependencies;
+
+export default {
+    name: 'myModule',
+    value: myModule
+};
+```
+
 ### Getting A Module Manually ###
 
 ```javascript
-const container = require('./djectConfiguredContainer');
 const testModule = container.build('testComposed');
 ```
+

@@ -143,11 +143,38 @@
         return localConfig;
     }
 
-    function baseUtilsFactory(path) {
-        function buildModulePaths(config) {
+    function baseUtilsFactory(glob, path) {
+
+        function getModulePathsArray(config) {
             return typeof config.modulePaths !== 'undefined' ? config.modulePaths.map(function (modulePath) {
                 return path.join(config.cwd, modulePath);
             }) : [];
+        }
+
+        var jsPattern = /^.+\.js$/;
+
+        function buildGlobPath(pathValue) {
+            if (jsPattern.test(pathValue)) {
+                return pathValue;
+            } else {
+                return pathValue + path.sep + '*.js';
+            }
+        }
+
+        function buildAllModulePaths(modulePaths) {
+            var globbedPaths = modulePaths.map(buildGlobPath).map(function (globPath) {
+                return glob.sync(globPath);
+            }).reduce(function (currentPaths, newPaths) {
+                return currentPaths.concat(newPaths);
+            });
+
+            return globbedPaths;
+        }
+
+        function buildModulePaths(config) {
+            var modulePathsArray = getModulePathsArray(config);
+
+            return buildAllModulePaths(modulePathsArray);
         }
 
         return {
@@ -158,7 +185,7 @@
         };
     }
 
-    container.register('baseUtils', baseUtilsFactory, ['path']);
+    container.register('baseUtils', baseUtilsFactory, ['glob', 'path']);
 });
 (function (loader) {
 
@@ -280,8 +307,17 @@
                 };
             }
 
+            function buildDependencyMap(dependencyNames, injectedDependencies) {
+                return dependencyNames.slice(1).reduce(function (dependencyMap, dependencyName, index) {
+                    dependencyMap[dependencyName] = injectedDependencies[index];
+
+                    return dependencyMap;
+                }, {});
+            }
+
             var containerApi = {
                 build: moduleBuilder.build,
+                buildDependencyMap: buildDependencyMap,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
                 loadModule: registry.loadModule,
@@ -316,8 +352,6 @@
 
     function fileLoaderFactory(fs, glob, path) {
 
-        var jsPattern = /^.+\.js$/;
-
         function loadFileFromPath(filePath) {
             return function (fileName) {
                 var fullPath = path.join(filePath, fileName);
@@ -328,26 +362,18 @@
         function isFileInPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
 
-            var acceptedPaths = getFilePathsFromModulePaths(modulePaths).filter(function (filePath) {
+            var acceptedPaths = modulePaths.filter(function (filePath) {
                 return filePath.endsWith(fileName);
             });
 
             return acceptedPaths.length > 0;
         }
 
-        function buildGlobPath(pathValue) {
-            if (jsPattern.test(pathValue)) {
-                return pathValue;
-            } else {
-                return pathValue + path.sep + '*.js';
-            }
-        }
-
         function loadFileFromPaths(modulePaths, moduleName) {
             var fileName = moduleName + '.js';
             var fileTestPattern = new RegExp('[\\/\\\\]' + moduleName + '\\.js$', 'i');
 
-            var acceptedPaths = getFilePathsFromModulePaths(modulePaths).filter(function (filePath) {
+            var acceptedPaths = modulePaths.filter(function (filePath) {
                 return fileTestPattern.test(filePath);
             });
 
@@ -374,16 +400,8 @@
             return folderPathTokens.join(path.sep);
         }
 
-        function getFilePathsFromModulePaths(modulePaths) {
-            return modulePaths.map(buildGlobPath).map(function (globPath) {
-                return glob.sync(globPath);
-            }).reduce(function (currentPaths, newPaths) {
-                return currentPaths.concat(newPaths);
-            });
-        }
-
         function loadAllFilesFromPaths(modulePaths) {
-            return getFilePathsFromModulePaths(modulePaths).map(function (filePath) {
+            return modulePaths.map(function (filePath) {
                 var fileName = getFileName(filePath);
                 var folderName = getFileFolder(filePath);
 

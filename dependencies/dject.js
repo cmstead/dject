@@ -89,7 +89,7 @@
                 Object
                     .keys(registeredModules)
                     .forEach(function (moduleKey) {
-                        if(moduleKey === '__container') {
+                        if (moduleKey === '__container') {
                             return;
                         }
 
@@ -114,8 +114,17 @@
                 };
             }
 
+            function buildDependencyMap(dependencyNames, injectedDependencies) {
+                return dependencyNames.slice(1).reduce(function (dependencyMap, dependencyName, index) {
+                    dependencyMap[dependencyName] = injectedDependencies[index];
+
+                    return dependencyMap;
+                }, {});
+            }
+
             const containerApi = {
                 build: moduleBuilder.build,
+                buildDependencyMap: buildDependencyMap,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
                 loadModule: registry.loadModule,
