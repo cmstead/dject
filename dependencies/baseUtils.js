@@ -58,7 +58,7 @@
             const globbedPaths = modulePaths
                 .map(buildGlobPath)
                 .map(globPath => glob.sync(globPath))
-                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths));
+                .reduce((currentPaths, newPaths) => currentPaths.concat(newPaths), []);
 
             return globbedPaths;
 

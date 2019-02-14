@@ -3,6 +3,11 @@
     (title "Version History"))
 /bl-->
 
+**v1.12.1**
+- Bug fix
+    - Build all module paths fails in certain circumstances
+- Added `buildDependencyMap` to container for handling dependencies in minified files
+
 **v1.11.6**
 - Bug fixes
     - Fixed incorrect loading of overridden modules

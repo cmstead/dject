@@ -166,7 +166,7 @@
                 return glob.sync(globPath);
             }).reduce(function (currentPaths, newPaths) {
                 return currentPaths.concat(newPaths);
-            });
+            }, []);
 
             return globbedPaths;
         }
