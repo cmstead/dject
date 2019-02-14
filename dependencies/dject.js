@@ -115,7 +115,7 @@
             }
 
             function buildDependencyMap(dependencyNames, injectedDependencies) {
-                return dependencyNames.slice(1).reduce(function (dependencyMap, dependencyName, index) {
+                return dependencyNames.reduce(function (dependencyMap, dependencyName, index) {
                     dependencyMap[dependencyName] = injectedDependencies[index];
 
                     return dependencyMap;
