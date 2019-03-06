@@ -125,7 +125,7 @@
             function copyProps(destination, source) {
                 Object
                     .keys(source)
-                    .foreach(function (key) {
+                    .forEach(function (key) {
                         if (typeof destination[key] === 'undefined') {
                             destination[key] = source[key];
                         }
