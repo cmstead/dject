@@ -122,9 +122,22 @@
                 }, {});
             }
 
+            function copyProps(destination, source) {
+                Object
+                    .keys(source)
+                    .foreach(function (key) {
+                        if (typeof destination[key] === 'undefined') {
+                            destination[key] = source[key];
+                        }
+                    });
+
+                return destination;
+            }
+
             const containerApi = {
                 build: moduleBuilder.build,
                 buildDependencyMap: buildDependencyMap,
+                copyProps: copyProps,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
                 loadModule: registry.loadModule,
