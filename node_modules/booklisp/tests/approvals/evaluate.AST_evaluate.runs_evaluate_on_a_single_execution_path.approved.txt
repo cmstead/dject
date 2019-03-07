@@ -1,0 +1,19 @@
+[
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+        "filemeta": {
+            "title": "This is the title of the file",
+            "subtitle": "This is the (sub)title of the file",
+            "authors": [
+                "Chris Stead",
+                "Tyler \"Alter Ego\" Durden",
+                "Robert Paulsen"
+            ]
+        }
+    }
+]

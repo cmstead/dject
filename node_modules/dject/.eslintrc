@@ -1,0 +1,30 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-console": 1,
+        "no-extra-boolean-cast": 0
+    },
+    "globals": {
+        "__dirname": false,
+        "require": false,
+        "describe": false,
+        "it": false,
+        "beforeEach": false,
+        "afterEach": false,
+        "module": false,
+        "console": false,
+        "global": false,
+        "runQuokkaMochaBdd": false,
+        "Symbol": false,
+        "signet": false,
+        "window": false,
+        "esprima": false,
+        "matchlightFactory": false,
+        "process": false,
+        "chooseReporter": false
+    }
+}

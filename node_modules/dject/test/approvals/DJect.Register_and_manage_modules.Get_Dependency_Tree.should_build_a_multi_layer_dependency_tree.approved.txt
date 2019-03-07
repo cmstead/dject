@@ -1,0 +1,26 @@
+{
+    "name": "justInTime",
+    "instantiable": false,
+    "singleton": false,
+    "dependencies": [
+        {
+            "name": "testComposed",
+            "instantiable": false,
+            "singleton": false,
+            "dependencies": [
+                {
+                    "name": "testBase",
+                    "instantiable": false,
+                    "singleton": false,
+                    "dependencies": []
+                },
+                {
+                    "name": "otherBase",
+                    "instantiable": false,
+                    "singleton": false,
+                    "dependencies": []
+                }
+            ]
+        }
+    ]
+}
