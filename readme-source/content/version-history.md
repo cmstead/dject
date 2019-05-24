@@ -3,6 +3,9 @@
     (title "Version History"))
 /bl-->
 
+**v2.0.0**
+- Updated client import config to always provide dependencies as a single object with each dependency as a property
+
 **v1.12.1**
 - Bug fix
     - Build all module paths fails in certain circumstances

@@ -53,24 +53,34 @@ describe('DJect', function () {
         let container;
 
         beforeEach(function() {
+            function singleDependency() {
+                return 'expect me';
+            }
+
             function objectAcceptingDependency() {
+                console.log(arguments);
                 return {
                     dependencies: arguments[0]
                 };
             }
+
+            objectAcceptingDependency['@dependencies'] = [
+                'singleDependency'
+            ];
 
             const configCopy = Object.create(config);
             configCopy.dependenciesAsObject = true;
 
             container = dject.new(configCopy);
 
+            container.register(singleDependency);
             container.register(objectAcceptingDependency);
         });
 
         it('passes an object for dependencies', function () {
             const newObject = container.build('objectAcceptingDependency');
 
-            assert.equal(JSON.stringify(newObject.dependencies), '{}');
+            assert.equal(JSON.stringify(newObject.dependencies), '{"singleDependency":"expect me"}');
         });
     });
 
