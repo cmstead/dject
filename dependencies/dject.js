@@ -27,7 +27,7 @@
 
             const coreContainer = containerFactory();
             const registry = registryFactory(modulePaths, coreContainer);
-            const moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+            const moduleBuilder = moduleBuilderFactory(coreContainer, registry, localConfig);
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
 

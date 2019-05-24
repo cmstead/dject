@@ -19,7 +19,8 @@ var config = {
     ],
     allowOverride: false,
     eagerLoad: false,
-    errorOnModuleDNE: false
+    errorOnModuleDNE: false,
+    dependenciesAsObject: false
 };
 
 module.exports = require('dject').new(config);

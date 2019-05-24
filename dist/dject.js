@@ -32,6 +32,11 @@
         return registry[moduleName]();
     }
 
+    function buildWithObject(moduleName) {
+        throwOnUnregistered(moduleName);
+        return registry[moduleName].buildWithObject();
+    }
+
     function set(obj, key, value) {
         obj[key] = value;
         return obj;
@@ -42,12 +47,28 @@
             return moduleFactory.apply(null, dependencies.map(build));
         }
 
+        function buildModuleWithObject() {
+            var dependencyInstances = dependencies.map(buildWithObject);
+
+            var dependencyMap = dependencies.reduce(function (result, dependencyName, index) {
+                result[dependencyName] = dependencyInstances[index];
+            }, {});
+
+            return moduleFactory(dependencyMap);
+        }
+
         function getDependencies() {
             return dependencies.slice(0);
         }
 
         Object.defineProperty(moduleBuilder, 'originalModule', {
             value: moduleFactory,
+            writeable: false,
+            configurable: false
+        });
+
+        Object.defineProperty(moduleBuilder, 'buildWithObject', {
+            value: buildModuleWithObject,
             writeable: false,
             configurable: false
         });
@@ -95,6 +116,7 @@
     }
 
     api.build = build;
+    api.buildWithObject = buildWithObject;
     api.getModuleBuilder = getModuleBuilder;
     api.getModuleRegistry = getModuleRegistry;
     api.isRegistered = isRegistered;
@@ -139,6 +161,7 @@
         localConfig.allowOverride = valueOrDefault(config.allowOverride, false);
         localConfig.eagerLoad = valueOrDefault(config.eagerLoad, false);
         localConfig.errorOnModuleDNE = valueOrDefault(config.errorOnModuleDNE, false);
+        localConfig.dependenciesAsObject = valueOrDefault(config.dependenciesAsObject, false);
 
         return localConfig;
     }
@@ -226,7 +249,7 @@
 
             var coreContainer = containerFactory();
             var registry = registryFactory(modulePaths, coreContainer);
-            var moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+            var moduleBuilder = moduleBuilderFactory(coreContainer, registry, localConfig);
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry);
 
@@ -440,7 +463,7 @@
     'use strict';
 
     function moduleBuilderFactoryBuilder() {
-        return function (coreContainer, registry) {
+        return function (coreContainer, registry, config) {
 
             function loadModuleIfMissing(moduleName) {
                 if (!coreContainer.isRegistered(moduleName)) {
@@ -461,7 +484,7 @@
                 loadModuleIfMissing(moduleName);
                 loadDependencies(moduleName);
 
-                return coreContainer.build(moduleName);
+                return config.dependenciesAsObject ? coreContainer.buildWithObject(moduleName) : coreContainer.build(moduleName);
             }
 
             function build(moduleName) {

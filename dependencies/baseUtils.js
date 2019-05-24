@@ -31,6 +31,7 @@
         localConfig.allowOverride = valueOrDefault(config.allowOverride, false);
         localConfig.eagerLoad = valueOrDefault(config.eagerLoad, false);
         localConfig.errorOnModuleDNE = valueOrDefault(config.errorOnModuleDNE, false);
+        localConfig.dependenciesAsObject = valueOrDefault(config.dependenciesAsObject, false);
 
         return localConfig;
     }

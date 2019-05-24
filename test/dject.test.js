@@ -49,6 +49,31 @@ describe('DJect', function () {
         this.verify(prettyJson(container.getRegisteredModules()));
     });
 
+    describe('Provide modules as a single object', function() {
+        let container;
+
+        beforeEach(function() {
+            function objectAcceptingDependency() {
+                return {
+                    dependencies: arguments[0]
+                };
+            }
+
+            const configCopy = Object.create(config);
+            configCopy.dependenciesAsObject = true;
+
+            container = dject.new(configCopy);
+
+            container.register(objectAcceptingDependency);
+        });
+
+        it('passes an object for dependencies', function () {
+            const newObject = container.build('objectAcceptingDependency');
+
+            assert.equal(JSON.stringify(newObject.dependencies), '{}');
+        });
+    });
+
     describe('Register and manage modules', function () {
 
         var container;
