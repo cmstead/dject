@@ -4,8 +4,11 @@
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
+    "test": "node ./node_modules/nanocommit/",
     "lint": "node ./node_modules/eslint/bin/eslint ./dependencies/*.js"
+  },
+  "nanocommit": {
+    "testCommand": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js"
   },
   "repository": {
     "type": "git",
