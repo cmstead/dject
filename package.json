@@ -8,9 +8,7 @@
     "lint": "node ./node_modules/eslint/bin/eslint ./dependencies/*.js"
   },
   "nanocommit": {
-    "testCommand": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
-    "blindCommit": true,
-    "commitMessage": "Added commit message setting"
+    "testCommand": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js"
   },
   "repository": {
     "type": "git",
