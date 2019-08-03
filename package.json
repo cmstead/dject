@@ -9,7 +9,8 @@
   },
   "nanocommit": {
     "testCommand": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
-    "blindCommit": true
+    "blindCommit": true,
+    "commitMessage": "Added commit message setting"
   },
   "repository": {
     "type": "git",
