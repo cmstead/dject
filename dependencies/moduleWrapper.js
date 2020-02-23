@@ -36,11 +36,16 @@
         function wrapInstantiable(moduleValue) {
             function instantiableFactory() {
                 const dependencies = Array.prototype.slice.call(arguments, 0);
-                const instance = Object.create(moduleValue.prototype);
 
-                moduleValue.apply(instance, dependencies);
+                if (typeof moduleValue.build !== 'function') {
+                    const instance = Object.create(moduleValue.prototype);
 
-                return instance;
+                    moduleValue.apply(instance, dependencies);
+
+                    return instance;
+                } else {
+                    moduleValue.build.apply(null, dependencies);
+                }
             }
 
             instantiableFactory['@instantiable'] = true;
@@ -52,7 +57,8 @@
         function wrapSpecialModule(moduleValue) {
             if (moduleValue['@singleton']) {
                 return wrapSingleton(moduleValue);
-            } else if (moduleValue['@instantiable']) {
+            } else if (moduleValue['@instantiable']
+                || typeof moduleValue.build === 'function') {
                 return wrapInstantiable(moduleValue);
             } else {
                 return moduleValue;

@@ -4,7 +4,9 @@
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
+    "test": "npm run test-dject-class && npm run test-library",
+    "test-library": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
+    "test-dject-class": "node --experimental-modules ./test/DjectClass.test.mjs",
     "lint": "node ./node_modules/eslint/bin/eslint ./dependencies/*.js",
     "build-readme": "node ./node_modules/booklisp ./readme-source/readme.source.md ./README.md"
   },
@@ -45,6 +47,7 @@
     "gulp-uglify": "^3.0.1",
     "mocha": "^3.4.1",
     "nanocommit": "^1.0.2",
+    "test-module": "file:test/fixtures/test-module",
     "through2": "^2.0.5"
   },
   "dependencies": {
