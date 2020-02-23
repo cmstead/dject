@@ -21,7 +21,7 @@ describe('DJect', function () {
             cwd: __dirname,
             modulePaths: [
                 'side-load-modules',
-                'testModules'
+                'testModules/**/*.js'
             ]
         };
     });
@@ -49,6 +49,41 @@ describe('DJect', function () {
         this.verify(prettyJson(container.getRegisteredModules()));
     });
 
+    describe('Provide modules as a single object', function() {
+        let container;
+
+        beforeEach(function() {
+            function singleDependency() {
+                return 'expect me';
+            }
+
+            function objectAcceptingDependency() {
+                console.log(arguments);
+                return {
+                    dependencies: arguments[0]
+                };
+            }
+
+            objectAcceptingDependency['@dependencies'] = [
+                'singleDependency'
+            ];
+
+            const configCopy = Object.create(config);
+            configCopy.dependenciesAsObject = true;
+
+            container = dject.new(configCopy);
+
+            container.register(singleDependency);
+            container.register(objectAcceptingDependency);
+        });
+
+        it('passes an object for dependencies', function () {
+            const newObject = container.build('objectAcceptingDependency');
+
+            assert.equal(JSON.stringify(newObject.dependencies), '{"singleDependency":"expect me"}');
+        });
+    });
+
     describe('Register and manage modules', function () {
 
         var container;
@@ -72,10 +107,9 @@ describe('DJect', function () {
 
 
             it('should register a module defined with an arrow function', function () {
-                container.register(() => ({ foo: 'bar'}), 'arrowModule');
+                container.register(() => ({ foo: 'bar' }), 'arrowModule');
                 this.verify(prettyJson(container.build('arrowModule')));
             });
-
 
             it('should allow registering a module with dependencies', function () {
                 container.register(require('./side-load-modules/testComposed'));
@@ -83,7 +117,7 @@ describe('DJect', function () {
             });
 
             it('should throw an error if value is not a function', function () {
-                function register () {
+                function register() {
                     container.register({ foo: 'bar' });
                 }
 
@@ -102,7 +136,21 @@ describe('DJect', function () {
                 const container = dject.new(testConfig);
 
                 const expectedError = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true'
-                assert.throws(container.register.bind(null, function myDependency() {}), expectedError);
+                assert.throws(container.register.bind(null, function myDependency() { }), expectedError);
+            });
+
+            it('should not throw an error when a module exists in node_modules and the setting is set to check for existance', function () {
+                const testConfig = {
+                    cwd: './test',
+                    modulePaths: [
+                        'testModules'
+                    ],
+                    errorOnModuleDNE: true
+                };
+
+                const container = dject.new(testConfig);
+
+                assert.doesNotThrow(container.register.bind(null, function testModule() { }));
             });
 
             it('should not throw an error when a module exists in the filesystem and the setting is set to check for existance', function () {
@@ -116,7 +164,7 @@ describe('DJect', function () {
 
                 const container = dject.new(testConfig);
 
-                assert.doesNotThrow(container.register.bind(null, function justInTime() {}));
+                assert.doesNotThrow(container.register.bind(null, function justInTime() { }));
             });
 
         });
@@ -164,7 +212,7 @@ describe('DJect', function () {
                 container.loadModule('circular1');
                 container.loadModule('circular2');
 
-                assert.throws(container.build.bind(null, 'circular1'), 'Dependency chain is either circular or too deep to process: Maximum call stack size exceeded');
+                assert.throws(container.build.bind(null, 'circular1'), 'An error occurred while processing dependencies: Maximum call stack size exceeded');
             });
 
             it('should manage singleton modules correctly', function () {
@@ -173,9 +221,61 @@ describe('DJect', function () {
                 assert.equal(container.build('testSingleton'), firstInstance);
             });
 
-            it('should properly instantiate standalone objects', function () {
-                this.verify(container.build('TestInstantiable').toString());
+
+            describe('instantiable modules', function () {
+                it('should properly instantiate standalone objects', function () {
+                    const constructedModule = container.build('TestInstantiable');
+
+                    this.verify(constructedModule.toString());
+                });
+
+                it('constructs a dependency tree with an instantiable object in the middle', function () {
+                    function localTestModule(TestInstantiable) {
+                        return {
+                            doTheThing: () => TestInstantiable.getObjs()
+                        }
+                    }
+
+                    container.register(localTestModule);
+
+                    const constructedModule = container.build('localTestModule');
+
+                    this.verify(JSON.stringify(constructedModule.doTheThing(), null, 4));
+                });
+
+                it('constructs an instantiable module with no dependencies', function () {
+                    const constructedModule = container.build('NoDependenciesTestInstantiable');
+
+                    constructedModule
+                        .add('foo', 'bar')
+                        .add('baz', 'quux');
+
+                    assert.equal(constructedModule.get('baz'), 'quux');
+                });
+
+                it('constructs a dependency tree with an instantiable object in the middle with no dependencies', function () {
+                    function localTestModule(NoDependenciesTestInstantiable) {
+                        return {
+                            doTheThing: function () {
+                                NoDependenciesTestInstantiable
+                                    .add('foo', 'bar')
+                                    .add('baz', 'quux');
+
+                                return NoDependenciesTestInstantiable.get('foo');
+                            }
+                        }
+                    }
+
+                    container.register(localTestModule);
+
+                    const constructedModule = container.build('localTestModule');
+
+                    assert.equal(constructedModule.doTheThing(), 'bar');
+                });
+
+
             });
+
 
             it('should load dependencies from file system if they are not pre-loaded', function () {
                 this.verify(prettyJson(container.build('justInTime')));
@@ -206,7 +306,56 @@ describe('DJect', function () {
                 container.build('justInTime');
                 var subcontainer = container.new();
 
-                assert.doesNotThrow(subcontainer.override.bind(null, function justInTime(){}));
+                assert.doesNotThrow(subcontainer.override.bind(null, function justInTime() { }));
+            });
+
+            it('should consume overriding dependencies', function () {
+                container.build('justInTime');
+
+                container.register(function testModule(justInTime) {
+                    function doSomeStuff() {
+                        justInTime.doStuff();
+                    }
+                    return {
+                        doSomeStuff: doSomeStuff
+                    };
+                });
+                var subcontainer = container.new();
+
+                var overridingModuleUsed = false;
+
+                subcontainer.override(function justInTime() {
+                    function doStuff() {
+                        overridingModuleUsed = true;
+                    }
+
+                    return {
+                        doStuff: doStuff
+                    };
+                });
+
+                const testModule = subcontainer.build('testModule');
+
+                testModule.doSomeStuff();
+
+                assert.isTrue(overridingModuleUsed);
+            });
+
+        });
+
+        describe('__container', function () {
+
+            it('is available as a dependency from a container', function () {
+                const __container = container.build('__container');
+
+                assert.equal(container, __container);
+            });
+
+            it('is always the current container, even as a child', function () {
+                const childContainer = container.new();
+                const __container = childContainer.build('__container');
+
+                assert.equal(childContainer, __container);
             });
 
         });

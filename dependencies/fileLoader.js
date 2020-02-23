@@ -8,21 +8,11 @@
 
 })(function (container) {
 
-    function fileLoaderFactory(fs, path) {
-
-        const jsPattern = /^.+\.js$/;
-
-        function statFile(filepath) {
-            try {
-                return fs.lstatSync(filepath).isFile();
-            } catch (e) {
-                return false;
-            }
-        }
+    function fileLoaderFactory(fs, glob, path) {
 
         function loadFileFromPath(filePath) {
-            return function (filename) {
-                const fullPath = path.join(filePath, filename);
+            return function (fileName) {
+                const fullPath = path.join(filePath, fileName);
                 return require(fullPath);
             }
         }
@@ -31,9 +21,8 @@
             const fileName = moduleName + '.js';
 
             const acceptedPaths = modulePaths
-                .filter(function (modulePath) {
-                    const filepath = path.join(modulePath, fileName);
-                    return statFile(filepath);
+                .filter(function (filePath) {
+                    return filePath.endsWith(fileName);
                 });
 
             return acceptedPaths.length > 0;
@@ -41,11 +30,11 @@
 
         function loadFileFromPaths(modulePaths, moduleName) {
             const fileName = moduleName + '.js';
+            const fileTestPattern = new RegExp('[\\/\\\\]' + moduleName + '\\.js$', 'i');
 
             const acceptedPaths = modulePaths
-                .filter(function (modulePath) {
-                    const filepath = path.join(modulePath, fileName);
-                    return statFile(filepath);
+                .filter(function (filePath) {
+                    return fileTestPattern.test(filePath);
                 });
 
             if (acceptedPaths.length > 1) {
@@ -53,26 +42,36 @@
                 throw new Error(message);
             }
 
-            const filePath = acceptedPaths[0];
-            return typeof filePath !== 'undefined'
+
+            const filePath = acceptedPaths.length > 0
+                ? getFileFolder(acceptedPaths[0])
+                : null;
+
+            return filePath !== null
                 ? loadFileFromPath(filePath)(fileName)
                 : null;
         }
 
-        function isJSFile(filename) {
-            return filename.match(jsPattern) !== null;
+        function getFileName(filePath) {
+            const pathTokens = filePath.split(/[\/\\]/);
+
+            return pathTokens.pop();
         }
 
-        function loadAllFilesFromPath(modulePath) {
-            return fs.readdirSync(modulePath)
-                .filter(isJSFile)
-                .map(loadFileFromPath(modulePath));
+        function getFileFolder(filePath) {
+            const pathTokens = filePath.split(/[\/\\]/);
+            const folderPathTokens = pathTokens.slice(0, pathTokens.length - 1);
+
+            return folderPathTokens.join(path.sep);
         }
 
         function loadAllFilesFromPaths(modulePaths) {
-            return modulePaths.reduce(function (moduleOutput, modulePath) {
-                return moduleOutput.concat(loadAllFilesFromPath(modulePath));
-            }, []);
+            return modulePaths.map(function (filePath) {
+                const fileName = getFileName(filePath);
+                const folderName = getFileFolder(filePath);
+
+                return loadFileFromPath(folderName)(fileName);
+            });
         }
 
         return {
@@ -82,6 +81,6 @@
         };
     }
 
-    container.register('fileLoader', fileLoaderFactory, ['fs', 'path']);
+    container.register('fileLoader', fileLoaderFactory, ['fs', 'glob', 'path']);
 
 });

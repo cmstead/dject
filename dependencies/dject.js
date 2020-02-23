@@ -14,6 +14,7 @@
         containerFactory,
         fileLoader,
         moduleBuilderFactory,
+        moduleLoader,
         moduleUtils,
         registryFactory
     ) {
@@ -26,35 +27,51 @@
 
             const coreContainer = containerFactory();
             const registry = registryFactory(modulePaths, coreContainer);
-            const moduleBuilder = moduleBuilderFactory(coreContainer, registry);
+            const moduleBuilder = moduleBuilderFactory(coreContainer, registry, localConfig);
 
             baseUtils.performEagerLoad(localConfig.eagerLoad, modulePaths, registry)
 
-            function override(moduleValue, moduleName) {
-                if (localConfig.allowOverride) {
-                    registry.override(moduleValue, moduleName);
-                } else {
+            function checkModuleDNE(moduleName) {
+                return localConfig.errorOnModuleDNE
+                    && !fileLoader.isFileInPaths(modulePaths, moduleName)
+                    && moduleLoader.loadInstalledModule(moduleName) === null;
+            }
+
+            function throwIfModuleDNE(moduleName) {
+                if (checkModuleDNE(moduleName)) {
+                    const message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
+                    throw new Error(message);
+                }
+            }
+
+            function throwIfOverrideDisallowed() {
+                if (!localConfig.allowOverride) {
                     const message = 'Cannot override module, allowOverride is set to false.';
                     throw new Error(message);
                 }
             }
 
-            function checkModuleDNE(moduleName) {
-                return localConfig.errorOnModuleDNE
-                    && !fileLoader.isFileInPaths(modulePaths, moduleName);
+            function getLocalModuleName(moduleValue, moduleName) {
+                return typeof moduleName === 'string'
+                    ? moduleName
+                    : moduleUtils.getModuleName(moduleValue);
+            }
+
+            function override(moduleValue, moduleName) {
+                const localName = getLocalModuleName(moduleValue, moduleName);
+
+                throwIfOverrideDisallowed();
+                throwIfModuleDNE(localName);
+
+                registry.override(moduleValue, localName);
             }
 
             function register(moduleValue, moduleName) {
-                const localName = typeof moduleName === 'string'
-                    ? moduleName
-                    : moduleUtils.getModuleName(moduleValue);
+                const localName = getLocalModuleName(moduleValue, moduleName);
 
-                if (checkModuleDNE(localName)) {
-                    const message = 'Cannot register module that does not exist in filesystem; errorOnModuleDNE is set to true';
-                    throw new Error(message);
-                } else {
-                    registry.registerModule(moduleValue, moduleName);
-                }
+                throwIfModuleDNE(localName);
+
+                registry.registerModule(moduleValue, moduleName);
             }
 
             function buildChildConfig(config) {
@@ -72,8 +89,12 @@
                 Object
                     .keys(registeredModules)
                     .forEach(function (moduleKey) {
+                        if (moduleKey === '__container') {
+                            return;
+                        }
+
                         const moduleValue = registeredModules[moduleKey];
-                        childContainer.register(moduleValue, moduleKey);
+                        childContainer.register(moduleValue.originalModule, moduleKey);
                     });
 
                 return childContainer;
@@ -93,8 +114,30 @@
                 };
             }
 
-            return {
+            function buildDependencyMap(dependencyNames, injectedDependencies) {
+                return dependencyNames.reduce(function (dependencyMap, dependencyName, index) {
+                    dependencyMap[dependencyName] = injectedDependencies[index];
+
+                    return dependencyMap;
+                }, {});
+            }
+
+            function copyProps(destination, source) {
+                Object
+                    .keys(source)
+                    .forEach(function (key) {
+                        if (typeof destination[key] === 'undefined') {
+                            destination[key] = source[key];
+                        }
+                    });
+
+                return destination;
+            }
+
+            const containerApi = {
                 build: moduleBuilder.build,
+                buildDependencyMap: buildDependencyMap,
+                copyProps: copyProps,
                 getRegisteredModules: registry.getRegisteredModules,
                 getDependencyTree: getDependencyTree,
                 loadModule: registry.loadModule,
@@ -103,6 +146,10 @@
                 register: register,
                 registerModules: registry.registerModules
             };
+
+            registry.registerModule(function __container() { return containerApi; });
+
+            return containerApi;
         }
 
         return {
@@ -115,6 +162,7 @@
         'containerFactory',
         'fileLoader',
         'moduleBuilderFactory',
+        'moduleLoader',
         'moduleUtils',
         'registryFactory'
     ]);

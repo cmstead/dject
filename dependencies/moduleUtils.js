@@ -45,18 +45,29 @@
             }
         }
 
+        function buildModuleDependencyList(fn) {
+            return getArgStr(fn)
+            .replace(/\/\*.*\*\//, '')
+            .split(',')
+            .map(function (paramName) { return paramName.trim(); })
+            .filter(function (paramName) { return paramName.length > 0; });
+        }
+
         function getModuleDependencies(fn) {
             throwOnBadFunction(fn);
 
-            return getArgStr(fn)
-                .replace(/\/\*.*\*\//, '')
-                .split(',')
-                .map(function (paramName) { return paramName.trim(); })
-                .filter(function (paramName) { return paramName.length > 0; });
+            if(typeof fn['@dependencies'] === 'object') {
+                return fn['@dependencies'];
+            } else if(typeof fn.dependencies === 'function') {
+                return fn.dependencies();
+            } else {
+                return buildModuleDependencyList(fn);
+            }
         }
 
         function getModuleInfo(moduleValue, moduleName) {
             const dependencies = getModuleDependencies(moduleValue);
+
             const name = typeof moduleName === 'string'
                 ? moduleName
                 : getModuleName(moduleValue);

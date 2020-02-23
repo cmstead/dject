@@ -8,13 +8,15 @@ function TestInstantiable (testBase, otherBase) {
 }
 
 TestInstantiable.prototype = {
+    getObjs: function () {
+        return this.objs;
+    },
+
     toString: function () {
         return 'TestInstantiableInstance: \n' + JSON.stringify(this.objs, null, 4);
     }
 };
 
 TestInstantiable['@instantiable'] = true;
-TestInstantiable['@dependencies'] = ['testBase', 'otherBase'];
-TestInstantiable['@name'] = 'TestInstantiable';
 
 module.exports = TestInstantiable;

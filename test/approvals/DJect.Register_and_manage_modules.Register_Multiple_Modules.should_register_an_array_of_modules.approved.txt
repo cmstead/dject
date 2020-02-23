@@ -1,4 +1,5 @@
 [
+    "__container",
     "testBase",
     "circular1",
     "circular2"

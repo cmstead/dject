@@ -1,0 +1,10 @@
+{
+    "testBase": {
+        "foo": "bar",
+        "baz": "quux"
+    },
+    "otherBase": {
+        "bar": "bar",
+        "baz": "baz"
+    }
+}

@@ -11,14 +11,14 @@
     function moduleLoaderFactory() {
 
         function caseFromCamelToKebab(moduleName) {
-            return moduleName.replace(/([A-Z])/g, '-$1');
+            return moduleName.replace(/([A-Z])/g, '-$1').toLowerCase();
         }
 
         function loadInstalledModule(moduleName) {
-            const moduleKebabName = caseFromCamelToKebab(moduleName);
+            const moduleKebabCaseName = caseFromCamelToKebab(moduleName);
 
             try {
-                return require(moduleKebabName);
+                return require(moduleKebabCaseName);
             } catch (e) {
                 return null;
             }
