@@ -32,4 +32,4 @@ class Dject {
     }
 }
 
-export default Dject;
+module.exports = Dject;
