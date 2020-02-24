@@ -25,7 +25,8 @@ class Dject {
     static prepareExport(instantiableObject) {
         return {
             name: instantiableObject.name,
-            value: instantiableObject
+            value: instantiableObject,
+            type: instantiableObject
         };
     }
 }
