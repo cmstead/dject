@@ -9,6 +9,7 @@
     (section-main "./readme-source/content/getting-started.md")
     (section-main "./readme-source/content/config-parameters.md")
     (section-main "./readme-source/content/defining-consumable-modules.md")
+    (section-main "./readme-source/content/dject-class-support.md")
     (section-main "./readme-source/content/dject-api-examples.md")
     (section-main "./readme-source/content/dject-api-and-metadata.md")
     (section-main "./readme-source/content/version-history.md")

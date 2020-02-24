@@ -9,9 +9,10 @@
 - [Section 3: Getting Started](#user-content-getting-started)
 - [Section 4: Configuration Parameters](#user-content-configuration-parameters)
 - [Section 5: Module Patterns for Dject](#user-content-module-patterns-for-dject)
-- [Section 6: Consuming the Dject API and Examples](#user-content-consuming-the-dject-api-and-examples)
-- [Section 7: Dject API and Metadata](#user-content-dject-api-and-metadata)
-- [Section 8: Version History](#user-content-version-history)
+- [Section 6: Dject Class Support](#user-content-dject-class-support)
+- [Section 7: Consuming the Dject API and Examples](#user-content-consuming-the-dject-api-and-examples)
+- [Section 8: Dject API and Metadata](#user-content-dject-api-and-metadata)
+- [Section 9: Version History](#user-content-version-history)
 
 ## Introduction ##
 
@@ -173,6 +174,32 @@ export default {
 const testModule = container.build('testComposed');
 ```
 
+
+    
+
+## Dject Class Support ##
+
+Dject comes with a class which can be extended for setting up Javascript and Typescript classes. Here is an example of what it looks like to create an injectable class:
+
+**Note** This requires either Typescript or Node v12 or above.
+
+```javascript
+import Dject from 'dject/Dject.mjs';
+
+class MyObject extends Dject {
+    static '@dependencies' = [
+        'dependency1',
+        'dependency2'
+    ];
+
+    // Required to properly build an instance
+    static build (dependencies) {
+        Dject.build(MyObject, dependencies);
+    }
+}
+
+export default Dject.buildMetadata(MyObject);
+```
 
     
 

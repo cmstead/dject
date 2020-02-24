@@ -1,5 +1,4 @@
 class Dject {
-
     constructor(dependencyMap) {
         Object
             .keys(dependencyMap)
@@ -15,10 +14,19 @@ class Dject {
     }
 
     static build(instantiableObject, dependencies) {
-        const dependencyNames = instantiableObject['@dependencies'];
+        const classDependencies = instantiableObject['@dependencies'];
+        const dependenciesAreDefined = Array.isArray(classDependencies);
+        const dependencyNames = dependenciesAreDefined ? classDependencies : [];
         const dependencyMap = this.buildDependencyMap(dependencyNames, dependencies);
 
         return new instantiableObject(dependencyMap);
+    }
+
+    static buildMetadata(instantiableObject) {
+        return {
+            name: instantiableObject.name,
+            value: instantiableObject
+        };
     }
 }
 
