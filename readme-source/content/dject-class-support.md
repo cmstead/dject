@@ -23,5 +23,5 @@ class MyObject extends Dject {
     }
 }
 
-export default Dject.buildMetadata(MyObject);
+export default Dject.prepareExport(MyObject);
 ```
