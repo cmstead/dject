@@ -22,7 +22,7 @@ class Dject {
         return new instantiableObject(dependencyMap);
     }
 
-    static buildMetadata(instantiableObject) {
+    static prepareExport(instantiableObject) {
         return {
             name: instantiableObject.name,
             value: instantiableObject
