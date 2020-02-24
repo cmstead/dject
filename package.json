@@ -1,6 +1,6 @@
 {
   "name": "dject",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
