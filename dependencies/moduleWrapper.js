@@ -49,7 +49,7 @@
 
                     return instance;
                 } else {
-                    moduleValue.build.apply(null, dependencies);
+                    return moduleValue.build.call(null, dependencies);
                 }
             }
 

@@ -11,7 +11,7 @@ Dject comes with a class which can be extended for setting up Javascript and Typ
 ```javascript
 import Dject from 'dject/Dject';
 
-class MyObject extends Dject {
+class MyObject {
     static '@dependencies' = [
         'dependency1',
         'dependency2'

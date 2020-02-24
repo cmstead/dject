@@ -1,5 +1,6 @@
 class Dject {
-    constructor(dependencyMap = {}) {
+
+    static attachDependencies(dependencyMap = {}){
         Object
             .keys(dependencyMap)
             .forEach(key =>
