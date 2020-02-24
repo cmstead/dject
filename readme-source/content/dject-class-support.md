@@ -9,7 +9,7 @@ Dject comes with a class which can be extended for setting up Javascript and Typ
 **Note** This requires either Typescript or Node v12 or above.
 
 ```javascript
-import Dject from 'dject/Dject.mjs';
+import Dject from 'dject/Dject';
 
 class MyObject extends Dject {
     static '@dependencies' = [
