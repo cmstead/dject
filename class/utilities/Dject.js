@@ -1,6 +1,6 @@
 class Dject {
 
-    constructor(dependencyMap) {
+    static attachDependencies(dependencyMap = {}){
         Object
             .keys(dependencyMap)
             .forEach(key =>
@@ -15,11 +15,21 @@ class Dject {
     }
 
     static build(instantiableObject, dependencies) {
-        const dependencyNames = instantiableObject['@dependencies'];
+        const classDependencies = instantiableObject['@dependencies'];
+        const dependenciesAreDefined = Array.isArray(classDependencies);
+        const dependencyNames = dependenciesAreDefined ? classDependencies : [];
         const dependencyMap = this.buildDependencyMap(dependencyNames, dependencies);
 
         return new instantiableObject(dependencyMap);
     }
+
+    static prepareExport(instantiableObject) {
+        return {
+            name: instantiableObject.name,
+            value: instantiableObject,
+            type: instantiableObject
+        };
+    }
 }
 
-export default Dject;
+module.exports = Dject;

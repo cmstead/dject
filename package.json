@@ -1,10 +1,10 @@
 {
   "name": "dject",
-  "version": "1.14.2",
+  "version": "1.18.0",
   "description": "Inversion of control for all through dependency injection",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test-dject-class && npm run test-library",
+    "test": "npm run test-library",
     "test-library": "node ./node_modules/mocha/bin/mocha ./test/**/*.test.js",
     "test-dject-class": "node --experimental-modules ./test/DjectClass.test.mjs",
     "lint": "node ./node_modules/eslint/bin/eslint ./dependencies/*.js",
