@@ -1,1 +1,5 @@
-test/*
+test
+readme-source
+dev-tools
+gulpfile.js
+.vscode

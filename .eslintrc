@@ -1,13 +1,14 @@
 {
     "extends": "eslint:recommended",
     "parserOptions": {
-        "ecmaVersion": 6,
+        "ecmaVersion": 11,
         "sourceType": "module"
     },
     "rules": {
         "no-console": 1,
         "no-extra-boolean-cast": 0,
-        "no-useless-escape": 1
+        "no-useless-escape": 1,
+        "no-unreachable": 1
     },
     "globals": {
         "__dirname": false,
