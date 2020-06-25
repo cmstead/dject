@@ -16,12 +16,27 @@
             return typeof predefinedName === 'string' ? predefinedName : moduleInstance.name;
         }
 
+        function isClass(fn) {
+            const firstLine = fn.toString().split('\n')[0];
+
+            return !/function|=>/.test(firstLine);
+        }
+
+        function getClassConstructorArguments(classDefinition) {
+            const constructorPattern = /constructor\s*\([^)]*\)\s*\{?/ig;
+            const constructorDefinition = classDefinition.toString().match(constructorPattern);
+
+            return constructorDefinition[0].match(/constructor\s*\(([^)]*)\)/)[1];
+        }
+
         function getFunctionArgs(fn) {
             const functionSource = fn.toString();
             const baseFunctionMatch = functionSource.match(/function\s.*?\(([^)]*)\)/);
 
             if (baseFunctionMatch !== null) {
                 return baseFunctionMatch[1];
+            } else if (isClass(fn)) {
+                return getClassConstructorArguments(fn);
             } else {
                 return functionSource.match(/.*\(([^)]*)\)\s*\=\>/)[1];
             }
@@ -38,27 +53,33 @@
 
         function throwOnBadFunction(fn) {
             const message = 'Cannot register module. Expected function, but got ' + typeof fn +
-            ' with value ' + JSON.stringify(fn, null, 4);
+                ' with value ' + JSON.stringify(fn, null, 4);
 
-            if(typeof fn !== 'function'){
+            if (typeof fn !== 'function') {
                 throw new Error(message);
             }
         }
 
         function buildModuleDependencyList(fn) {
+            const multilineCommentPattern = /\/\*.*\*\//;
+
             return getArgStr(fn)
-            .replace(/\/\*.*\*\//, '')
-            .split(',')
-            .map(function (paramName) { return paramName.trim(); })
-            .filter(function (paramName) { return paramName.length > 0; });
+                .replace(multilineCommentPattern, '')
+                .split(',')
+                .map(function (paramName) { return paramName.trim(); })
+                .filter(function (paramName) { return paramName.length > 0; });
         }
 
         function getModuleDependencies(fn) {
             throwOnBadFunction(fn);
 
-            if(typeof fn['@dependencies'] === 'object') {
+            // change this logic to testing for array only
+            const dependenciesAreAnObject = typeof fn['@dependencies'] === 'object';
+            const dependenciesAreAFunction = typeof fn.dependencies === 'function';
+
+            if (dependenciesAreAnObject) {
                 return fn['@dependencies'];
-            } else if(typeof fn.dependencies === 'function') {
+            } else if (dependenciesAreAFunction) {
                 return fn.dependencies();
             } else {
                 return buildModuleDependencyList(fn);

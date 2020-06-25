@@ -304,28 +304,30 @@ describe('DJect', function () {
 
             it('should properly handle the handover of instantiable modules', function () {
                 class TestClass{
-                    constructor(testing) {}
+                    constructor(somethingElse) {
+                        this.somethingElse = somethingElse;
+                    }
 
-                    test() {}
+                    test() {
+                        return this.somethingElse();
+                    }
                 }
 
                 TestClass['@instantiable'] = true;
-                TestClass['@dependencies'] = [];
-
-                console.log(TestClass.prototype.constructor.toString());
-                console.log(TestClass.toString().match(/constructor\s*\([^)]*\)\s*\{?/ig));
 
                 const localContainer = container.new();
 
-                localContainer.register(TestClass);
+                localContainer.register(TestClass, 'TestClass');
 
                 const localSubcontainer = localContainer.new();
 
+                localSubcontainer.register(() => () => 'a test string', 'somethingElse');
+
                 const testInstance = localSubcontainer.build('TestClass');
 
-                assert.equal(typeof testInstance.test, 'function');
+                assert.equal(testInstance.test(), 'a test string');
 
-            })
+            });
 
             it('should allow overrides of dependencies', function () {
                 container.build('justInTime');
@@ -333,7 +335,6 @@ describe('DJect', function () {
 
                 assert.doesNotThrow(subcontainer.override.bind(null, function justInTime() { }));
             });
-
             it('should consume overriding dependencies', function () {
                 container.build('justInTime');
 

@@ -11,10 +11,8 @@
 
     function moduleWrapperFactory() {
 
-        function copyProperties(moduleValue, wrappedModule) {
+        function carryDependencyListForward(moduleValue, wrappedModule) {
             wrappedModule['@dependencies'] = moduleValue['@dependencies'];
-            wrappedModule['@instantiable'] = moduleValue['@instantiable'];
-            wrappedModule['@singleton'] = moduleValue['@singleton'];
 
             return wrappedModule;
         }
@@ -35,36 +33,44 @@
                 return generatedModule;
             }
 
-            return copyProperties(moduleValue, singletonFactory);
+            return carryDependencyListForward(moduleValue, singletonFactory);
         }
 
         function wrapInstantiable(moduleValue) {
             function instantiableFactory() {
                 const dependencies = Array.prototype.slice.call(arguments, 0);
 
-                if (typeof moduleValue.build !== 'function') {
+                const moduleDoesNotHaveBuildMethod = typeof moduleValue.build !== 'function';
+
+                if (moduleDoesNotHaveBuildMethod) {
                     return new moduleValue(...dependencies);
                 } else {
                     return moduleValue.build(...dependencies);
                 }
             }
 
-            return copyProperties(moduleValue, instantiableFactory);
+            return carryDependencyListForward(moduleValue, instantiableFactory);
         }
 
-        function isInstantiable (moduleValue) {
+        function isInstantiable(moduleValue) {
             return moduleValue['@instantiable']
-            || typeof moduleValue.build === 'function';
+                || typeof moduleValue.build === 'function';
+        }
+
+        function isSingleton(moduleValue) {
+            return Boolean(moduleValue['@singleton']);
         }
 
         function wrapSpecialModule(moduleValue) {
-            let wrappedModule = isInstantiable(moduleValue)
-                ? wrapInstantiable(moduleValue)
-                : moduleValue;
+            let wrappedModule = moduleValue;
 
-            wrappedModule = wrappedModule['@singleton']
-                ? wrapSingleton(wrappedModule)
-                : wrappedModule;
+            if (isInstantiable(moduleValue)) {
+                wrappedModule = wrapInstantiable(moduleValue);
+            }
+
+            if (isSingleton(moduleValue)) {
+                wrappedModule = wrapSingleton(wrappedModule);
+            }
 
             return wrappedModule;
         }

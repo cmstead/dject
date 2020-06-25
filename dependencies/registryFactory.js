@@ -23,6 +23,8 @@
                 const dependencies = moduleInfo.dependencies;
                 const name = moduleInfo.name;
 
+                moduleValue['@dependencies'] = dependencies;
+
                 const wrappedModule = moduleWrapper.wrapSpecialModule(moduleValue);
 
                 coreContainer.register(name, wrappedModule, dependencies);
