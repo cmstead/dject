@@ -43,13 +43,9 @@
                 const dependencies = Array.prototype.slice.call(arguments, 0);
 
                 if (typeof moduleValue.build !== 'function') {
-                    const instance = Object.create(moduleValue.prototype);
-
-                    moduleValue.apply(instance, dependencies);
-
-                    return instance;
+                    return new moduleValue(...dependencies);
                 } else {
-                    return moduleValue.build.call(null, dependencies);
+                    return moduleValue.build(...dependencies);
                 }
             }
 

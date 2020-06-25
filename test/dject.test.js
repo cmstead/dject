@@ -302,6 +302,31 @@ describe('DJect', function () {
                 this.verify(prettyJson(subcontainer.getRegisteredModules()));
             });
 
+            it('should properly handle the handover of instantiable modules', function () {
+                class TestClass{
+                    constructor(testing) {}
+
+                    test() {}
+                }
+
+                TestClass['@instantiable'] = true;
+                TestClass['@dependencies'] = [];
+
+                console.log(TestClass.prototype.constructor.toString());
+                console.log(TestClass.toString().match(/constructor\s*\([^)]*\)\s*\{?/ig));
+
+                const localContainer = container.new();
+
+                localContainer.register(TestClass);
+
+                const localSubcontainer = localContainer.new();
+
+                const testInstance = localSubcontainer.build('TestClass');
+
+                assert.equal(typeof testInstance.test, 'function');
+
+            })
+
             it('should allow overrides of dependencies', function () {
                 container.build('justInTime');
                 var subcontainer = container.new();
