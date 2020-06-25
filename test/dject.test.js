@@ -167,6 +167,16 @@ describe('DJect', function () {
                 assert.doesNotThrow(container.register.bind(null, function justInTime() { }));
             });
 
+            it('does not barf when @dependencies is set to null', function () {
+                function aThingFactory() {}
+                aThingFactory['@dependencies'] = null;
+
+                const localSubcontainer = container.new();
+
+                localSubcontainer.register(aThingFactory);
+
+                localSubcontainer.build('aThingFactory');
+            });
         });
 
         describe('Register Multiple Modules', function () {

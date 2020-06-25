@@ -73,11 +73,10 @@
         function getModuleDependencies(fn) {
             throwOnBadFunction(fn);
 
-            // change this logic to testing for array only
-            const dependenciesAreAnObject = typeof fn['@dependencies'] === 'object';
+            const dependenciesAreAnArray = Array.isArray(fn['@dependencies']);
             const dependenciesAreAFunction = typeof fn.dependencies === 'function';
 
-            if (dependenciesAreAnObject) {
+            if (dependenciesAreAnArray) {
                 return fn['@dependencies'];
             } else if (dependenciesAreAFunction) {
                 return fn.dependencies();
