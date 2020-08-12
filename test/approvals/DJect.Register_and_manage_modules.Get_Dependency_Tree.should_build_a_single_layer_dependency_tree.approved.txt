@@ -1,6 +1,0 @@
-{
-    "name": "testBase",
-    "instantiable": false,
-    "singleton": false,
-    "dependencies": []
-}
